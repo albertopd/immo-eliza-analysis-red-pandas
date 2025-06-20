@@ -15,90 +15,114 @@ class DataCleanner:
         pass
 
     def clean_errors(self):
-        # clean data value
-        # clean data types
-        # changing False/True to 0/1
-        # clean extra spaces/tabulations inside values
         print(self.properties.info())
 
-        # Clean column 'zimmo code'
-        self.properties["zimmo code"] = self.properties["zimmo code"].fillna("").str.strip()
+        # Derop column 'zimmo code'
+        self.properties.drop(columns=['zimmo code'], inplace=True)
 
         # Clean column 'type'
-        self.properties["type"] = self.properties["type"].fillna("").str.strip()
+        self.properties['type'] = self.properties['type'].fillna("").str.strip()
 
         # Drop rows that don't have a 'price'
-        self.properties.dropna(subset=["price"], inplace=True)
+        self.properties.dropna(subset=['price'], inplace=True)
 
-        # Clean column 'street'
-        self.properties["street"] = self.properties["street"].fillna("").str.strip()
+        # Drop column 'street'
+        self.properties.drop(columns=['street'], inplace=True)
 
-        # Clean column 'number'
-        self.properties["number"] = self.properties["number"].fillna("").str.strip()
+        # Drop column 'number'
+        self.properties.drop(columns=['number'], inplace=True)
 
-        # Clean column 'postalcode' and convert it to Int64 (to be able to handle the NaN)
-        self.properties["postcode"] = self.properties["postcode"].str.extract(r"(\d+)").astype("Int64") 
-        # Is it a mandatory variable? Should we drop the rows that don't contain a value?
-        #self.properties.dropna(subset=["postcode"], inplace=True)
+        # Clean column 'postalcode', convert it to Int64 and set value to -1 for undefined data
+        self.properties['postcode'] = self.properties['postcode'].str.extract(r"(\d+)").astype("Int64").replace([np.nan, np.inf, -np.inf], -1)
 
-        # Add column province from the postal codes
+        # TODO: Add column province from the postal codes
 
         # Clean column 'city'
-        self.properties["city"] = self.properties["city"].fillna("").str.strip()
+        self.properties['city'] = self.properties['city'].fillna("").str.strip()
 
-        # Convert column 'living area(m²)'
-        # TODO: Check Jean if can be converted to int or not and if we should drop 
-        self.properties["living area(m²)"] = self.properties["living area(m²)"].replace([np.nan, np.inf, -np.inf], 0)
-        self.properties = self.properties[self.properties["living area(m²)"] != 0]
+        # Drop rows that don't contain a 'living area(m²)'
+        self.properties['living area(m²)'] = self.properties['living area(m²)'].replace([np.nan, np.inf, -np.inf], -1)
+        self.properties = self.properties[self.properties['living area(m²)'] != -1]
 
-        # Convert column 'ground area(m²)' to int => Check Jean if can be converted to int 
-        self.properties["ground area(m²)"] = self.properties["ground area(m²)"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
-        # TODO: drop the ground area
+        # Drop column 'ground area(m²)', not useful to us 
+        self.properties.drop(columns=['ground area(m²)'], inplace=True)
 
-        # Convert column 'bedroom' to int
-        self.properties["bedroom"] = self.properties["bedroom"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
-        # TODO: 
+        # Clean column 'bedroom' 
         # If there is not value for the bedroom, 
         #   we check 'living area'
         #       if living_area < 40 then assign 1 bedroom
         #       if living_area >= 40 then average(bedrooms)
         #       else: -1
+        avg_bedrooms = round(self.properties['bedroom'].mean(skipna=True))
+        self.properties['bedroom'] = self.properties.apply(
+            lambda row: (
+                1 if pd.isna(row['bedroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] < 40 
+                else avg_bedrooms if pd.isna(row['bedroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] >= 40 
+                else -1 if pd.isna(row['bedroom']) 
+                else row['bedroom']
+            ),
+            axis=1
+        ).astype(int)
         
-        # Convert column 'bathroom' to int
-        self.properties["bathroom"] = self.properties["bathroom"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
-        # TODO: 
+        # Clean column 'bathroom'
         # If there is not value for the bathroom, 
         #   we check 'living area'
         #       if living_area < 100 then assign 1 bathroom
         #       if living_area >= 100 then average(bathtroom)
         #       else: -1
+        avg_bathrooms = round(self.properties['bathroom'].mean(skipna=True))
+        self.properties['bathroom'] = self.properties.apply(
+            lambda row: (
+                1 if pd.isna(row['bathroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] < 100 
+                else avg_bathrooms if pd.isna(row['bathroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] >= 100 
+                else -1 if pd.isna(row['bathroom']) 
+                else row['bathroom']
+            ),
+            axis=1
+        ).astype(int)
 
-        # Convert column 'garage' to int (# of garages)
-        self.properties["garage"] = self.properties["garage"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
-        # TODO: from number_of_garages to actually has_garage_or_not
-        # if undefined then set -1
+        # Convert column 'garage' and clean it up
+        # If undefined then set -1
         # if garage > 0 then we assign 1
         # else assign 0
+        self.properties['garage'] = self.properties['garage'].apply(
+            lambda x: -1 if pd.isna(x) or x in [np.inf, -np.inf]
+            else 1 if x > 0
+            else 0
+        ).astype(int)
 
         # Convert column 'garden' to int (1=True, 0=False)
-        self.properties["garden"] = self.properties["garden"].fillna(False).astype(int)
+        self.properties['garden'] = self.properties['garden'].fillna(False).astype(int)
 
         # Convert column 'EPC(kWh/m²)' to int
         # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
-        self.properties["EPC(kWh/m²)"] = self.properties["EPC(kWh/m²)"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
+        self.properties['EPC(kWh/m²)'] = self.properties['EPC(kWh/m²)'].replace([np.nan, np.inf, -np.inf], -1).astype(int)
 
         # Convert column 'renovation obligation' to int (1=True, 0=False)
-        self.properties["renovation obligation"] = self.properties["renovation obligation"].fillna(-1).astype(int)
+        self.properties['renovation obligation'] = self.properties['renovation obligation'].fillna(-1).astype(int)
 
         # Convert column 'year built' to int
         # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
-        self.properties["year built"] = self.properties["year built"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
+        self.properties['year built'] = self.properties['year built'].replace([np.nan, np.inf, -np.inf], -1).astype(int)
 
         # Clean column 'mobiscore'
         # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
-        self.properties["mobiscore"] = self.properties["mobiscore"].replace([np.nan, np.inf, -np.inf], -1)
+        self.properties['mobiscore'] = self.properties['mobiscore'].replace([np.nan, np.inf, -np.inf], -1)
+
+        # Drop column url, not useful to us 
+        self.properties.drop(columns=['url'], inplace=True)
 
         print(self.properties.info())
+
+    def infer_bedrooms(self, row, avg_bedrooms):
+        if pd.isna(row['bedroom']):
+            if pd.notna(row['living_area']):
+                if row['living_area'] < 40:
+                    return 1
+                elif row['living_area'] >= 40:
+                    return round(avg_bedrooms)
+            return -1
+        return row['bedroom']
 
     def clean_empty_cells(self):
         # Drop fully empty rows
