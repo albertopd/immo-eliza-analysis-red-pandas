@@ -17,8 +17,15 @@ class DataCleanner:
         # clean extra spaces/tabulations inside values
         pass
 
-    def clean_empty_cells(self):
-        # remove empty lines
-        # remove empty columns
-        # what to do with empty cells?
-        pass
+    def clean_empty_cells(self, properties):
+        # Drop fully empty rows
+        properties.dropna(how='all', inplace=True)
+
+        # Drop fully empty columns
+        properties.dropna(axis=1, how='all', inplace=True)
+
+        # Replace remaining empty cells with a default value
+        properties.fillna("No Info", inplace=True)
+
+        # Save cleaned CSV
+        properties.to_csv("cleaned_properties.csv", index=False)
