@@ -7,8 +7,8 @@ import matplotlib.pyplot as plt
 class DataCleanner:
     REGEX_REMOVE_NON_NUMERIC = re.compile(r'[^0-9]')
 
-    def __init__(self, data_file_path: str) -> None:
-        self.properties = pd.read_csv(data_file_path)
+    def __init__(self) -> None:
+        pass
 
     def clean_duplicates(self):
         # remove duplicates, including multiple listings for the same property
@@ -132,6 +132,9 @@ class DataCleanner:
 
         print(self.properties.value_counts("property type"))
         print(self.properties.value_counts("property subtype"))
+
+    def load_data_from_csv(self, data_file_path: str):
+        self.properties = pd.read_csv(data_file_path)
 
     def export_data_to_csv(self, data_file_path: str):
         self.properties.to_csv(data_file_path, index=False)

@@ -1,6 +1,8 @@
 from data_cleanner import DataCleanner
 
-data_cleaner = DataCleanner("data/properties.csv")
+data_cleaner = DataCleanner()
+
+data_cleaner.load_data_from_csv("data/properties.csv")
 
 data_cleaner.clean_duplicates()
 data_cleaner.clean_errors()
