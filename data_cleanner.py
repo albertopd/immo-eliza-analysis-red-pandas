@@ -12,6 +12,7 @@ class DataCleanner:
 
     def clean_errors(self):
         # clean data value
+        # clean data types
         # changing False/True to 0/1
         # clean extra spaces/tabulations inside values
         pass
