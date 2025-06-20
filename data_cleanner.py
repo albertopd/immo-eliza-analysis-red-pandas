@@ -39,32 +39,46 @@ class DataCleanner:
         # Clean column 'postalcode' and convert it to Int64 (to be able to handle the NaN)
         self.properties["postcode"] = self.properties["postcode"].str.extract(r"(\d+)").astype("Int64") 
         # Is it a mandatory variable? Should we drop the rows that don't contain a value?
-        self.properties.dropna(subset=["postcode"], inplace=True)
+        #self.properties.dropna(subset=["postcode"], inplace=True)
+
+        # Add column province from the postal codes
 
         # Clean column 'city'
         self.properties["city"] = self.properties["city"].fillna("").str.strip()
 
-        # Convert column 'living area(m²)' to int
-        self.properties["living area(m²)"] = self.properties["living area(m²)"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
-        # TODO: Is it a mandatory variable? Should we drop the rows that don't contain value?
-        # self.properties = self.properties[self.properties["living area(m²)"] != 0]
+        # Convert column 'living area(m²)'
+        # TODO: Check Jean if can be converted to int or not and if we should drop 
+        self.properties["living area(m²)"] = self.properties["living area(m²)"].replace([np.nan, np.inf, -np.inf], 0)
+        self.properties = self.properties[self.properties["living area(m²)"] != 0]
 
-        # Convert column 'ground area(m²)' to int
+        # Convert column 'ground area(m²)' to int => Check Jean if can be converted to int 
         self.properties["ground area(m²)"] = self.properties["ground area(m²)"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+        # TODO: drop the ground area
 
         # Convert column 'bedroom' to int
         self.properties["bedroom"] = self.properties["bedroom"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
-        # TODO: Is it a mandatory variable? Should we drop the rows that don't contain value?
-        # self.properties = self.properties[self.properties["bedroom"] != 0]
-
+        # TODO: 
+        # If there is not value for the bedroom, 
+        #   we check 'living area'
+        #       if living_area < 40 then assign 1 bedroom
+        #       if living_area >= 40 then average(bedrooms)
+        #       else: -1
+        
         # Convert column 'bathroom' to int
         self.properties["bathroom"] = self.properties["bathroom"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
-        # TODO: Is it a mandatory variable? Should we drop the rows that don't contain value?
-        # self.properties = self.properties[self.properties["bathroom"] != 0]
+        # TODO: 
+        # If there is not value for the bathroom, 
+        #   we check 'living area'
+        #       if living_area < 100 then assign 1 bathroom
+        #       if living_area >= 100 then average(bathtroom)
+        #       else: -1
 
         # Convert column 'garage' to int (# of garages)
-        # TODO: should we just convert to 1/0 (has garage or not?)
-        self.properties["garage"] = self.properties["garage"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+        self.properties["garage"] = self.properties["garage"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
+        # TODO: from number_of_garages to actually has_garage_or_not
+        # if undefined then set -1
+        # if garage > 0 then we assign 1
+        # else assign 0
 
         # Convert column 'garden' to int (1=True, 0=False)
         self.properties["garden"] = self.properties["garden"].fillna(False).astype(int)
@@ -74,7 +88,7 @@ class DataCleanner:
         self.properties["EPC(kWh/m²)"] = self.properties["EPC(kWh/m²)"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
 
         # Convert column 'renovation obligation' to int (1=True, 0=False)
-        self.properties["renovation obligation"] = self.properties["renovation obligation"].fillna(0).astype(int)
+        self.properties["renovation obligation"] = self.properties["renovation obligation"].fillna(-1).astype(int)
 
         # Convert column 'year built' to int
         # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
@@ -93,15 +107,24 @@ class DataCleanner:
         pass
 
     def split_column_type(self):
-        self.properties['property type'] = np.select(
-            [self.properties['type'].str.contains('Huis', na=False), self.properties['type'].str.contains('Appartement', na=False)],
-            ['Huis', 'Appartement'],
-            default='Project'
-        )
-        self.properties['property subtype'] = self.properties['type'].str.replace(r' \((Huis|Appartement)\)', '', regex=True)
+        # Find the position of the "type" column
+        type_index = self.properties.columns.get_loc('type')
 
-        # TODO: Should be drop the original column 'type'?
-        # self.properties.drop(columns=['type'])
+        # Insert "property type" and "property subtype" right after it
+        self.properties.insert(type_index + 1, 'property type', 
+            np.select(
+                [self.properties['type'].str.contains('Huis', na=False),
+                self.properties['type'].str.contains('Appartement', na=False)],
+                ['Huis', 'Appartement'],
+                default='Project'
+            )
+        )
+
+        self.properties.insert(type_index + 2, 'property subtype', 
+            self.properties['type'].str.replace(r' \((Huis|Appartement)\)', '', regex=True)
+        )
+
+        self.properties.drop(columns=['type'], inplace=True)
 
         # TODO: Should be drop the properties that have 'Project' as the 'type'?
         # self.properties = self.properties[~self.properties['property type'].str.contains('Project', na=False)]
