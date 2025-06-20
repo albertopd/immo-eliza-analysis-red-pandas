@@ -86,10 +86,28 @@ class DataCleanner:
 
         print(self.properties.info())
 
-        self.properties.to_csv("data/clean_errors_data.csv", index=False)
-
     def clean_empty_cells(self):
         # remove empty lines
         # remove empty columns
         # what to do with empty cells?
         pass
+
+    def split_column_type(self):
+        self.properties['property type'] = np.select(
+            [self.properties['type'].str.contains('Huis', na=False), self.properties['type'].str.contains('Appartement', na=False)],
+            ['Huis', 'Appartement'],
+            default='Project'
+        )
+        self.properties['property subtype'] = self.properties['type'].str.replace(r' \((Huis|Appartement)\)', '', regex=True)
+
+        # TODO: Should be drop the original column 'type'?
+        # self.properties.drop(columns=['type'])
+
+        # TODO: Should be drop the properties that have 'Project' as the 'type'?
+        # self.properties = self.properties[~self.properties['property type'].str.contains('Project', na=False)]
+
+        print(self.properties.value_counts("property type"))
+        print(self.properties.value_counts("property subtype"))
+
+    def export_data_to_csv(self, data_file_path: str):
+        self.properties.to_csv(data_file_path, index=False)
