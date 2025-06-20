@@ -1,8 +1,12 @@
+import re
+import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 
 class DataCleanner:
+    REGEX_REMOVE_NON_NUMERIC = re.compile(r'[^0-9]')
+
     def __init__(self, data_file_path: str) -> None:
         self.properties = pd.read_csv(data_file_path)
 
@@ -15,7 +19,74 @@ class DataCleanner:
         # clean data types
         # changing False/True to 0/1
         # clean extra spaces/tabulations inside values
-        pass
+        print(self.properties.info())
+
+        # Clean column 'zimmo code'
+        self.properties["zimmo code"] = self.properties["zimmo code"].fillna("").str.strip()
+
+        # Clean column 'type'
+        self.properties["type"] = self.properties["type"].fillna("").str.strip()
+
+        # Drop rows that don't have a 'price'
+        self.properties.dropna(subset=["price"], inplace=True)
+
+        # Clean column 'street'
+        self.properties["street"] = self.properties["street"].fillna("").str.strip()
+
+        # Clean column 'number'
+        self.properties["number"] = self.properties["number"].fillna("").str.strip()
+
+        # Clean column 'postalcode' and convert it to Int64 (to be able to handle the NaN)
+        self.properties["postcode"] = self.properties["postcode"].str.extract(r"(\d+)").astype("Int64") 
+        # Is it a mandatory variable? Should we drop the rows that don't contain a value?
+        self.properties.dropna(subset=["postcode"], inplace=True)
+
+        # Clean column 'city'
+        self.properties["city"] = self.properties["city"].fillna("").str.strip()
+
+        # Convert column 'living area(m²)' to int
+        self.properties["living area(m²)"] = self.properties["living area(m²)"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+        # TODO: Is it a mandatory variable? Should we drop the rows that don't contain value?
+        # self.properties = self.properties[self.properties["living area(m²)"] != 0]
+
+        # Convert column 'ground area(m²)' to int
+        self.properties["ground area(m²)"] = self.properties["ground area(m²)"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+
+        # Convert column 'bedroom' to int
+        self.properties["bedroom"] = self.properties["bedroom"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+        # TODO: Is it a mandatory variable? Should we drop the rows that don't contain value?
+        # self.properties = self.properties[self.properties["bedroom"] != 0]
+
+        # Convert column 'bathroom' to int
+        self.properties["bathroom"] = self.properties["bathroom"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+        # TODO: Is it a mandatory variable? Should we drop the rows that don't contain value?
+        # self.properties = self.properties[self.properties["bathroom"] != 0]
+
+        # Convert column 'garage' to int (# of garages)
+        # TODO: should we just convert to 1/0 (has garage or not?)
+        self.properties["garage"] = self.properties["garage"].replace([np.nan, np.inf, -np.inf], 0).astype(int)
+
+        # Convert column 'garden' to int (1=True, 0=False)
+        self.properties["garden"] = self.properties["garden"].fillna(False).astype(int)
+
+        # Convert column 'EPC(kWh/m²)' to int
+        # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
+        self.properties["EPC(kWh/m²)"] = self.properties["EPC(kWh/m²)"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
+
+        # Convert column 'renovation obligation' to int (1=True, 0=False)
+        self.properties["renovation obligation"] = self.properties["renovation obligation"].fillna(0).astype(int)
+
+        # Convert column 'year built' to int
+        # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
+        self.properties["year built"] = self.properties["year built"].replace([np.nan, np.inf, -np.inf], -1).astype(int)
+
+        # Clean column 'mobiscore'
+        # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
+        self.properties["mobiscore"] = self.properties["mobiscore"].replace([np.nan, np.inf, -np.inf], -1)
+
+        print(self.properties.info())
+
+        self.properties.to_csv("data/clean_errors_data.csv", index=False)
 
     def clean_empty_cells(self):
         # remove empty lines
