@@ -7,9 +7,6 @@ import matplotlib.pyplot as plt
 class DataCleanner:
     REGEX_REMOVE_NON_NUMERIC = re.compile(r'[^0-9]')
 
-    def __init__(self) -> None:
-        pass
-
     def clean_duplicates(self):
         # remove duplicates, including multiple listings for the same property
         pass
