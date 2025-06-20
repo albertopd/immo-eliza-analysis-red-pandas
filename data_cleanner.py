@@ -138,3 +138,9 @@ class DataCleanner:
 
     def export_data_to_csv(self, data_file_path: str):
         self.properties.to_csv(data_file_path, index=False)
+
+    def clean_data(self):
+        self.clean_duplicates()
+        self.clean_errors()
+        self.clean_empty_cells()
+        self.split_column_type()
