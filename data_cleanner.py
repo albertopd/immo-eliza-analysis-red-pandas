@@ -101,10 +101,11 @@ class DataCleanner:
         print(self.properties.info())
 
     def clean_empty_cells(self):
-        # remove empty lines
-        # remove empty columns
-        # what to do with empty cells?
-        pass
+        # Drop fully empty rows
+        self.properties.dropna(how='all', inplace=True)
+
+        # Drop fully empty columns
+        self.properties.dropna(axis=1, how='all', inplace=True)
 
     def split_column_type(self):
         # Find the position of the "type" column
