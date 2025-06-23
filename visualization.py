@@ -5,7 +5,7 @@ import pandas as pd
 
 matplotlib.use('TkAgg')
 
-def plot_correlations_to_price(df: pd.DataFrame) -> None:
+def plot_correlations_to_price(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
     # Selecting only numeric columns
     numeric_df = df.select_dtypes(include=["int64", "float64"])
 
@@ -31,12 +31,12 @@ def plot_correlations_to_price(df: pd.DataFrame) -> None:
     plt.tight_layout()
 
     # Save correlations plot to file
-    plt.savefig("plots/correlation_with_variable_price.png", dpi=300)
+    plt.savefig(plot_file_path, dpi=300)
 
-    # Show correlations plot
-    plt.show()
+    if show_plot:
+        plt.show()
 
-def plot_outliers(df: pd.DataFrame) -> None:
+def plot_outliers(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
     # Select only numeric columns
     numeric_df = df.select_dtypes(include=["int64", "float64"])
 
@@ -51,7 +51,7 @@ def plot_outliers(df: pd.DataFrame) -> None:
     plt.tight_layout()
 
     # Save outliers plot to file
-    plt.savefig("plots/all_features_outliers.png", dpi=300)
+    plt.savefig(plot_file_path, dpi=300)
 
-    # Show correlations plot
-    plt.show()
+    if show_plot:
+        plt.show()
