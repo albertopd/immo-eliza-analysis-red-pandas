@@ -179,12 +179,27 @@ class DataCleanner:
                 # clean extra spaces/tabulations inside values
         return(df)
 
-    def clean_empty_cells(self):
-        # remove empty lines
-        # remove empty columns
-        # what to do with empty cells?https://github.com/albertopd/immo-eliza-analysis-red-pandas
-        pass
-    
+    def normalization(self):
+
+        df= self.clean_errors()
+        
+        building_conditions = {"GOOD":1,"AS_NEW":2,"TO_RENOVATE":3, "TO_BE_DONE_UP":4,"JUST_RENOVATED":5,"TO_RESTORE":6,'missed value':-1}
+        df["buildingConditionNormalize"]=df["buildingCondition"].replace(building_conditions)
+        epcScores = {'A++':1,'A+':2,'A':3,'B':4,'C':5,'D':6,'E':7,'F':8,'G':9,'G_C':9,'F_D':8,'C_A':5,'F_C':8,
+                     'E_C':7,'C_B':5,'E_D':7,'G_F':9,'D_C':6,'G_E':9,'X':0,'missed value':-1}
+        df["epcScoreNormalize"]=df["epcScore"].replace(epcScores)
+        heatingTypes={'GAS':1,'FUELOIL':2,'ELECTRIC':3,'PELLET':4,'WOOD':5,'SOLAR':6,'CARBON':7,'missed value':-1}
+        df["heatingTypeNormalize"]=df["heatingType"].replace(heatingTypes)
+        floodZoneTypes={'NON_FLOOD_ZONE':1,'POSSIBLE_FLOOD_ZONE':2,'RECOGNIZED_FLOOD_ZONE':3,
+                        'RECOGNIZED_N_CIRCUMSCRIBED_FLOOD_ZONE':4,'CIRCUMSCRIBED_WATERSIDE_ZONE':5,
+                        'CIRCUMSCRIBED_FLOOD_ZONE':6,'POSSIBLE_N_CIRCUMSCRIBED_FLOOD_ZONE':7,
+                        'POSSIBLE_N_CIRCUMSCRIBED_WATERSIDE_ZONE':8,'RECOGNIZED_N_CIRCUMSCRIBED_WATERSIDE_FLOOD_ZONE':9,'missed value':-1}
+        df["floodZoneTypeNormalize"]=df["floodZoneType"].replace(floodZoneTypes)
+        kitchenTypes={'NOT_INSTALLED':0,'SEMI_EQUIPPED':1,'INSTALLED':2,'HYPER_EQUIPPED':3,
+                      'USA_UNINSTALLED':0,'USA_SEMI_EQUIPPED':1,'USA_INSTALLED':2,'USA_HYPER_EQUIPPED':3,'missed value':-1}
+        df["kitchenTypeNormalize"]=df["kitchenType"].replace(kitchenTypes)
+        return(df)
+
     def send_output_file(self, output_file: str):
         """""" """
         Exports the cleaned and deduplicated DataFrame to a new CSV file.
