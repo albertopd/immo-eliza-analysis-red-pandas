@@ -2,6 +2,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
 from data_cleanner import DataCleanner
+from visualization import plot_correlations_to_price, plot_outliers
 
 matplotlib.use('TkAgg')
 
@@ -9,35 +10,9 @@ matplotlib.use('TkAgg')
 cleaner = DataCleanner("data/immoweb-dataset.csv")
 cleaner.send_output_file("data/data_cleanned.csv")
 
-# Convert -1 values to NaN so they are not accounted for in the correlation
-df = cleaner.to_real_values()
+# Plot correlations to price
+df = cleaner.to_real_values() # Convert -1 values to NaN so they are not included in the correlation
+plot_correlations_to_price(df)
 
-# Selecting only numeric columns
-numeric_df = df.select_dtypes(include=["int64", "float64"])
-
-# Calculation of the correlation matrix
-corr_matrix = numeric_df.corr()
-
-# Extracting correlations with 'price'
-price_corr = corr_matrix["price"].drop("price").sort_values()
-
-# Plotting the correlations
-plt.figure(figsize=(10, 6))
-sns.barplot(
-    x=price_corr.values,
-    y=price_corr.index,
-    hue=price_corr.index,
-    palette="coolwarm",
-    dodge=False,
-    legend=False
-)
-plt.title("Correlation with the variable 'price'")
-plt.xlabel("Correlation coefficient")
-plt.ylabel("Features")
-plt.tight_layout()
-
-# Save correlations plot to file
-plt.savefig("plots/correlation_with_variable_price.png", dpi=300)
-
-# Show correlations plot
-plt.show()
+# Plot the outliers
+plot_outliers(df)

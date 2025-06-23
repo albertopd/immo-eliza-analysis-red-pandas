@@ -1,6 +1,8 @@
 # Data Interpretation
 
-## Plot the outliers.
+## Plot the outliers
+
+![Outliers in All Numeric Features](../plots/all_features_outliers.png)
 
 ## Which variables would you delete and why ?
 
