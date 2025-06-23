@@ -3,165 +3,219 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+import os
+from pathlib import Path
+import numpy as np
 
 class DataCleanner:
-    REGEX_REMOVE_NON_NUMERIC = re.compile(r'[^0-9]')
+
+    def __init__(self, data_file_path: str) -> None:
+        """Initialize the DataCleaner with the path to the CSV file."""
+        self.data_file_path = data_file_path
+
+    def load_data_file(self):
+        """
+        Load any supported data file and return a pandas DataFrame.
+        Supported formats: CSV, JSON, Excel, Parquet, TXT, XML
+        """
+        if not os.path.exists(self.data_file_path) or os.path.getsize(self.data_file_path) == 0:
+            print(f"[WARNING] File is missing or empty: {self.data_file_path}")
+            return pd.DataFrame()
+
+        suffix = Path(self.data_file_path).suffix.lower()
+
+        try:
+            match suffix:
+                case ".csv":
+                    df = pd.read_csv(self.data_file_path)
+                case ".json":
+                    df = pd.read_json(self.data_file_path)
+                case ".xls" | ".xlsx":
+                    df = pd.read_excel(self.data_file_path)
+                case ".parquet":
+                    df = pd.read_parquet(self.data_file_path)
+                case ".txt":
+                    df = pd.read_csv(self.data_file_path, delimiter="\t")  # Or adjust delimiter
+                case ".xml":
+                    df = pd.read_xml(self.data_file_path)
+                case _:
+                    print(f"[ERROR] Unsupported file format: {suffix}")
+                    return pd.DataFrame()
+
+            if df.empty:
+                print(f"[WARNING] File loaded but contains no data: {self.data_file_path}")
+                return pd.DataFrame()
+
+            print(f"[INFO] Loaded {self.data_file_path} ({len(df)} rows)")
+            return df
+
+        except Exception as e:
+            print(f"[ERROR] Failed to read {self.data_file_path}: {e}")
+            return pd.DataFrame()
+    
+    def analyze_data_quality(self,df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Analyze data quality for a DataFrame.
+        Returns a summary of data types, missing values, and uniqueness for each column.
+        """
+        if df.empty:
+            print("[WARNING] The DataFrame is empty.")
+            return pd.DataFrame()
+
+        summary = pd.DataFrame({
+            "Data type": df.dtypes,
+            "Non-null count": df.notnull().sum(),
+            "Missing count": df.isnull().sum(),
+            "Missing %": df.isnull().mean() * 100,
+            "Unique values": df.nunique()
+        })
+
+        summary = summary.sort_values(by="Missing %", ascending=False)
+        return summary
 
     def clean_duplicates(self):
-        # remove duplicates, including multiple listings for the same property
-        pass
+        """
+        Cleans the dataset by:
+        - Removing duplicate rows.
+        - Dropping irrelevant or empty fields.
+        - Displaying data quality metrics before and after cleaning.
+        Returns:
+            cleaned_file (pd.DataFrame): The cleaned dataset.
+        """
 
-    def clean_errors(self):
-        print(self.properties.info())
+        # Step 1: Load the raw dataset
+        df = self.load_data_file()
+        if df.empty:
+            print("[WARNING] Loaded DataFrame is empty.")
+            return pd.DataFrame()
 
-        # Derop column 'zimmo code'
-        self.properties.drop(columns=['zimmo code'], inplace=True)
+        print("📊 Data Quality BEFORE cleaning:")
+        summary_before = self.analyze_data_quality(df)
+        print(summary_before)
 
-        # Clean column 'type'
-        self.properties['type'] = self.properties['type'].fillna("").str.strip()
+        # Step 2: Remove exact duplicates
+        cleaned_file = df.drop_duplicates()
 
-        # Drop rows that don't have a 'price'
-        self.properties.dropna(subset=['price'], inplace=True)
+        # Step 3: Drop irrelevant or problematic columns (if they exist)
+        columns_to_drop = [
+            "monthlyCost",
+            "accessibleDisabledPeople",
+            "hasBalcony",
+            "url",
+            "Unnamed: 0",
+            "id"
+        ]
+        cleaned_file.drop(columns=[col for col in columns_to_drop if col in cleaned_file.columns], inplace=True)
 
-        # Drop column 'street'
-        self.properties.drop(columns=['street'], inplace=True)
+        # Step 4: Show data quality summary after cleaning
+        print("\n📊 Data Quality AFTER cleaning:")
+        summary_after = self.analyze_data_quality(cleaned_file)
+        print(summary_after)
 
-        # Drop column 'number'
-        self.properties.drop(columns=['number'], inplace=True)
-
-        # Clean column 'postalcode', convert it to Int64 and set value to -1 for undefined data
-        self.properties['postcode'] = self.properties['postcode'].str.extract(r"(\d+)").astype("Int64").replace([np.nan, np.inf, -np.inf], -1)
-
-        # TODO: Add column province from the postal codes
-
-        # Clean column 'city'
-        self.properties['city'] = self.properties['city'].fillna("").str.strip()
-
-        # Drop rows that don't contain a 'living area(m²)'
-        self.properties['living area(m²)'] = self.properties['living area(m²)'].replace([np.nan, np.inf, -np.inf], -1)
-        self.properties = self.properties[self.properties['living area(m²)'] != -1]
-
-        # Drop column 'ground area(m²)', not useful to us 
-        self.properties.drop(columns=['ground area(m²)'], inplace=True)
-
-        # Clean column 'bedroom' 
-        # If there is not value for the bedroom, 
-        #   we check 'living area'
-        #       if living_area < 40 then assign 1 bedroom
-        #       if living_area >= 40 then average(bedrooms)
-        #       else: -1
-        avg_bedrooms = round(self.properties['bedroom'].mean(skipna=True))
-        self.properties['bedroom'] = self.properties.apply(
-            lambda row: (
-                1 if pd.isna(row['bedroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] < 40 
-                else avg_bedrooms if pd.isna(row['bedroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] >= 40 
-                else -1 if pd.isna(row['bedroom']) 
-                else row['bedroom']
-            ),
-            axis=1
-        ).astype(int)
+        return cleaned_file
         
-        # Clean column 'bathroom'
-        # If there is not value for the bathroom, 
-        #   we check 'living area'
-        #       if living_area < 100 then assign 1 bathroom
-        #       if living_area >= 100 then average(bathtroom)
-        #       else: -1
-        avg_bathrooms = round(self.properties['bathroom'].mean(skipna=True))
-        self.properties['bathroom'] = self.properties.apply(
-            lambda row: (
-                1 if pd.isna(row['bathroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] < 100 
-                else avg_bathrooms if pd.isna(row['bathroom']) and pd.notna(row['living area(m²)']) and row['living area(m²)'] >= 100 
-                else -1 if pd.isna(row['bathroom']) 
-                else row['bathroom']
-            ),
-            axis=1
-        ).astype(int)
+    def clean_errors(self) -> pd.DataFrame:
+        """
+        Cleans data errors by:
+        - Standardizing 'locality' to uppercase and stripping whitespace.
+        - Unifying locality names by postalCode using the most frequent value.
+        - Converting boolean columns to integers.
+        - Stripping whitespace in all string columns.
+        
+        Returns:
+            pd.DataFrame: Cleaned DataFrame.
+        """
+        df = self.clean_duplicates()
+        # Step 1: Normalize text
+        if "locality" in df.columns:
+            df["locality"] = df["locality"].astype(str).str.upper().str.strip()
 
-        # Convert column 'garage' and clean it up
-        # If undefined then set -1
-        # if garage > 0 then we assign 1
-        # else assign 0
-        self.properties['garage'] = self.properties['garage'].apply(
-            lambda x: -1 if pd.isna(x) or x in [np.inf, -np.inf]
-            else 1 if x > 0
-            else 0
-        ).astype(int)
-
-        # Convert column 'garden' to int (1=True, 0=False)
-        self.properties['garden'] = self.properties['garden'].fillna(False).astype(int)
-
-        # Convert column 'EPC(kWh/m²)' to int
-        # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
-        self.properties['EPC(kWh/m²)'] = self.properties['EPC(kWh/m²)'].replace([np.nan, np.inf, -np.inf], -1).astype(int)
-
-        # Convert column 'renovation obligation' to int (1=True, 0=False)
-        self.properties['renovation obligation'] = self.properties['renovation obligation'].fillna(-1).astype(int)
-
-        # Convert column 'year built' to int
-        # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
-        self.properties['year built'] = self.properties['year built'].replace([np.nan, np.inf, -np.inf], -1).astype(int)
-
-        # Clean column 'mobiscore'
-        # Using a placeholder of -1 for NaN. Useful to signal "unknown" clearly, especially for ML models
-        self.properties['mobiscore'] = self.properties['mobiscore'].replace([np.nan, np.inf, -np.inf], -1)
-
-        # Drop column url, not useful to us 
-        self.properties.drop(columns=['url'], inplace=True)
-
-        print(self.properties.info())
-
-    def infer_bedrooms(self, row, avg_bedrooms):
-        if pd.isna(row['bedroom']):
-            if pd.notna(row['living_area']):
-                if row['living_area'] < 40:
-                    return 1
-                elif row['living_area'] >= 40:
-                    return round(avg_bedrooms)
-            return -1
-        return row['bedroom']
-
-    def clean_empty_cells(self):
-        # Drop fully empty rows
-        self.properties.dropna(how='all', inplace=True)
-
-        # Drop fully empty columns
-        self.properties.dropna(axis=1, how='all', inplace=True)
-
-    def split_column_type(self):
-        # Find the position of the "type" column
-        type_index = self.properties.columns.get_loc('type')
-
-        # Insert "property type" and "property subtype" right after it
-        self.properties.insert(type_index + 1, 'property type', 
-            np.select(
-                [self.properties['type'].str.contains('Huis', na=False),
-                self.properties['type'].str.contains('Appartement', na=False)],
-                ['Huis', 'Appartement'],
-                default='Project'
-            )
+        # Step 2:  Replace each locality with the most frequent locality for the same postal code.
+        # Compute the most frequent locality for each postalCode
+        most_common_locality = (
+            df.groupby("postCode")["locality"]
+            .agg(lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0])
+            .to_dict()
         )
 
-        self.properties.insert(type_index + 2, 'property subtype', 
-            self.properties['type'].str.replace(r' \((Huis|Appartement)\)', '', regex=True)
-        )
+        # Replace all localities by the most frequent one per postalCode
+        df["locality"] = df["postCode"].map(most_common_locality)
 
-        self.properties.drop(columns=['type'], inplace=True)
+        print("[INFO] Localities standardized based on most frequent value per postal code.")
+            # drop streetFacadeWidth why? >80% are empty and there's no logical value that we can put in
+        df.drop("streetFacadeWidth", axis =1)
+        # drop rows where price is not mentioned : 2.737629 % of proprities without price
+        df= df.dropna(subset=["price"])
+        """
+        Convert column types safely, replacing invalid or NaN entries where necessary.
+        """
+        int_cols = [
+            "hasAirConditioning", "hasSwimmingPool", "hasDressingRoom", "hasFireplace",
+            "hasThermicPanels", "hasArmoredDoor", "hasHeatPump", "hasPhotovoltaicPanels",
+            "hasOffice", "hasAttic", "hasDiningRoom", "hasVisiophone", "hasGarden",
+            "gardenSurface", "parkingCountOutdoor", "hasLift", "roomCount", "parkingCountIndoor",
+            "hasBasement", "floorCount", "hasLivingRoom", "hasTerrace", "buildingConstructionYear",
+            "facedeCount", "toiletCount", "bathroomCount", "bedroomCount", "postCode","diningRoomSurface",
+            "kitchenSurface","terraceSurface","livingRoomSurface","landSurface","habitableSurface","streetFacadeWidth"
+        ]
 
-        # TODO: Should be drop the properties that have 'Project' as the 'type'?
-        # self.properties = self.properties[~self.properties['property type'].str.contains('Project', na=False)]
+        str_cols = [
+            "gardenOrientation", "terraceOrientation", "kitchenType", "floodZoneType",
+            "heatingType", "buildingCondition", "epcScore", "subtype", "province",
+            "locality", "type"
+        ]
 
-        print(self.properties.value_counts("property type"))
-        print(self.properties.value_counts("property subtype"))
+        # Convert integer columns safely
+        for col in int_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(-1).astype(int)
 
-    def load_data_from_csv(self, data_file_path: str):
-        self.properties = pd.read_csv(data_file_path)
+        # Convert string columns safely
+        for col in str_cols:
+            if col in df.columns:
+                df[col]=df[col].fillna("missed value")
+                df[col] = df[col].astype(str).str.strip()
+               
 
-    def export_data_to_csv(self, data_file_path: str):
-        self.properties.to_csv(data_file_path, index=False)
+        print("[INFO] All specified column types converted safely.")
+                # changing False/True to 0/1
+                # clean extra spaces/tabulations inside values
+        return(df)
 
-    def clean_data(self):
-        self.clean_duplicates()
-        self.clean_errors()
-        self.clean_empty_cells()
-        self.split_column_type()
+    def normalization(self):
+
+        df= self.clean_errors()
+        
+        building_conditions = {"GOOD":1,"AS_NEW":2,"TO_RENOVATE":3, "TO_BE_DONE_UP":4,"JUST_RENOVATED":5,"TO_RESTORE":6,'missed value':-1}
+        df["buildingConditionNormalize"]=df["buildingCondition"].replace(building_conditions)
+        epcScores = {'A++':1,'A+':2,'A':3,'B':4,'C':5,'D':6,'E':7,'F':8,'G':9,'G_C':9,'F_D':8,'C_A':5,'F_C':8,
+                     'E_C':7,'C_B':5,'E_D':7,'G_F':9,'D_C':6,'G_E':9,'X':0,'missed value':-1}
+        df["epcScoreNormalize"]=df["epcScore"].replace(epcScores)
+        heatingTypes={'GAS':1,'FUELOIL':2,'ELECTRIC':3,'PELLET':4,'WOOD':5,'SOLAR':6,'CARBON':7,'missed value':-1}
+        df["heatingTypeNormalize"]=df["heatingType"].replace(heatingTypes)
+        floodZoneTypes={'NON_FLOOD_ZONE':1,'POSSIBLE_FLOOD_ZONE':2,'RECOGNIZED_FLOOD_ZONE':3,
+                        'RECOGNIZED_N_CIRCUMSCRIBED_FLOOD_ZONE':4,'CIRCUMSCRIBED_WATERSIDE_ZONE':5,
+                        'CIRCUMSCRIBED_FLOOD_ZONE':6,'POSSIBLE_N_CIRCUMSCRIBED_FLOOD_ZONE':7,
+                        'POSSIBLE_N_CIRCUMSCRIBED_WATERSIDE_ZONE':8,'RECOGNIZED_N_CIRCUMSCRIBED_WATERSIDE_FLOOD_ZONE':9,'missed value':-1}
+        df["floodZoneTypeNormalize"]=df["floodZoneType"].replace(floodZoneTypes)
+        kitchenTypes={'NOT_INSTALLED':0,'SEMI_EQUIPPED':1,'INSTALLED':2,'HYPER_EQUIPPED':3,
+                      'USA_UNINSTALLED':0,'USA_SEMI_EQUIPPED':1,'USA_INSTALLED':2,'USA_HYPER_EQUIPPED':3,'missed value':-1}
+        df["kitchenTypeNormalize"]=df["kitchenType"].replace(kitchenTypes)
+        return(df)
+    def to_real_value(self):
+        df = self.normalization()
+        df=df.replace(-1, np.nan)
+        return df
+
+
+    def send_output_file(self, output_file: str):
+        """""" """
+        Exports the cleaned and deduplicated DataFrame to a new CSV file.
+        """""
+        cleaned_df = self.normalization()
+        if not cleaned_df.empty:
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            cleaned_df.to_csv(output_file, index=False)
+            print(f"[SUCCESS] Exported {len(cleaned_df)} merged records → {output_file}")
+        else:
+            print("[WARNING] No data exported due to empty or invalid input.")        
