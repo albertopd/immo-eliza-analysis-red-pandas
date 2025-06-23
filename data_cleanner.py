@@ -2,6 +2,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+from pathlib import Path
 
 class DataCleanner:
 
@@ -9,68 +10,174 @@ class DataCleanner:
         """Initialize the DataCleaner with the path to the CSV file."""
         self.data_file_path = data_file_path
 
-    def clean_duplicates(self):
+    def load_data_file(self):
         """
-        Removes duplicates based on physical property attributes.
-        Merges multiple listings of the same property into one, enriching data.
+        Load any supported data file and return a pandas DataFrame.
+        Supported formats: CSV, JSON, Excel, Parquet, TXT, XML
         """
-        # Step 1: Load the data file
-        if os.path.exists(self.data_file_path) and os.path.getsize(self.data_file_path) > 0:
-            try:
-                df = pd.read_csv(self.data_file_path)
-                if df.empty:
-                    print(f"[WARNING] File exists but is empty: {self.data_file_path}")
-                    return pd.DataFrame()
-                print(f"[INFO] Loaded {self.data_file_path} ({len(df)} rows)")
-            except Exception as e:
-                print(f"[ERROR] Failed to read {self.data_file_path}: {e}")
-                return pd.DataFrame()
-        else:
+        if not os.path.exists(self.data_file_path) or os.path.getsize(self.data_file_path) == 0:
             print(f"[WARNING] File is missing or empty: {self.data_file_path}")
             return pd.DataFrame()
 
-        # Step 2: Define location identifier for merging
-        if all(col in df.columns for col in ["street", "number", "postcode", "city"]):
-            df["location"] = (
-                                df["street"].fillna("").astype(str).str.strip() +
-                                df["number"].fillna("").astype(str).str.strip() +
-                                df["postcode"].fillna("").astype(str).str.strip() +
-                                df["city"].fillna("").astype(str).str.strip()
-                            )
-        else:
-            print("[ERROR] Required columns are missing (street, postcode, number,city)")
+        suffix = Path(self.data_file_path).suffix.lower()
+
+        try:
+            match suffix:
+                case ".csv":
+                    df = pd.read_csv(self.data_file_path)
+                case ".json":
+                    df = pd.read_json(self.data_file_path)
+                case ".xls" | ".xlsx":
+                    df = pd.read_excel(self.data_file_path)
+                case ".parquet":
+                    df = pd.read_parquet(self.data_file_path)
+                case ".txt":
+                    df = pd.read_csv(self.data_file_path, delimiter="\t")  # Or adjust delimiter
+                case ".xml":
+                    df = pd.read_xml(self.data_file_path)
+                case _:
+                    print(f"[ERROR] Unsupported file format: {suffix}")
+                    return pd.DataFrame()
+
+            if df.empty:
+                print(f"[WARNING] File loaded but contains no data: {self.data_file_path}")
+                return pd.DataFrame()
+
+            print(f"[INFO] Loaded {self.data_file_path} ({len(df)} rows)")
+            return df
+
+        except Exception as e:
+            print(f"[ERROR] Failed to read {self.data_file_path}: {e}")
+            return pd.DataFrame()
+    
+    def analyze_data_quality(self,df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Analyze data quality for a DataFrame.
+        Returns a summary of data types, missing values, and uniqueness for each column.
+        """
+        if df.empty:
+            print("[WARNING] The DataFrame is empty.")
             return pd.DataFrame()
 
+        summary = pd.DataFrame({
+            "Data type": df.dtypes,
+            "Non-null count": df.notnull().sum(),
+            "Missing count": df.isnull().sum(),
+            "Missing %": df.isnull().mean() * 100,
+            "Unique values": df.nunique()
+        })
+
+        summary = summary.sort_values(by="Missing %", ascending=False)
+        return summary
+
+    def clean_duplicates(self):
+        """
+        Cleans the dataset by:
+        - Removing duplicate rows.
+        - Dropping irrelevant or empty fields.
+        - Displaying data quality metrics before and after cleaning.
+        Returns:
+            cleaned_file (pd.DataFrame): The cleaned dataset.
+        """
+
+        # Step 1: Load the raw dataset
+        df = self.load_data_file()
+        if df.empty:
+            print("[WARNING] Loaded DataFrame is empty.")
+            return pd.DataFrame()
+
+        print("📊 Data Quality BEFORE cleaning:")
+        summary_before = self.analyze_data_quality(df)
+        print(summary_before)
+
+        # Step 2: Remove exact duplicates
+        cleaned_file = df.drop_duplicates()
+
+        # Step 3: Drop irrelevant or problematic columns (if they exist)
+        columns_to_drop = [
+            "monthlyCost",
+            "accessibleDisabledPeople",
+            "hasBalcony",
+            "url",
+            "Unnamed: 0",
+            "id"
+        ]
+        cleaned_file.drop(columns=[col for col in columns_to_drop if col in cleaned_file.columns], inplace=True)
+
+        # Step 4: Show data quality summary after cleaning
+        print("\n📊 Data Quality AFTER cleaning:")
+        summary_after = self.analyze_data_quality(cleaned_file)
+        print(summary_after)
+
+        return cleaned_file
         
-       
-          # Step 3: Group by physical identifiers and merge rows
-        group_cols=["type","price","location","bedroom"]
-        merged_rows = []
-        grouped = df.groupby(group_cols)
+    def clean_errors(self) -> pd.DataFrame:
+        """
+        Cleans data errors by:
+        - Standardizing 'locality' to uppercase and stripping whitespace.
+        - Unifying locality names by postalCode using the most frequent value.
+        - Converting boolean columns to integers.
+        - Stripping whitespace in all string columns.
+        
+        Returns:
+            pd.DataFrame: Cleaned DataFrame.
+        """
+        df = self.clean_duplicates()
+        # Step 1: Normalize text
+        if "locality" in df.columns:
+            df["locality"] = df["locality"].astype(str).str.upper().str.strip()
 
-        for _, group in grouped:
-            # Base record is the one with highest price (or most complete)
-            selected = group.sort_values("price", ascending=False).iloc[0].to_dict()
+        # Step 2:  Replace each locality with the most frequent locality for the same postal code.
+        # Compute the most frequent locality for each postalCode
+        most_common_locality = (
+            df.groupby("postCode")["locality"]
+            .agg(lambda x: x.mode().iloc[0] if not x.mode().empty else x.iloc[0])
+            .to_dict()
+        )
 
-            for col in df.columns:
-                if pd.isna(selected.get(col)):
-                    for val in group[col]:
-                        if pd.notna(val):
-                            selected[col] = val
-                            break
+        # Replace all localities by the most frequent one per postalCode
+        df["locality"] = df["postCode"].map(most_common_locality)
 
-            selected["Previous URLs"] = "; ".join(group["url"].dropna().unique())
-            selected["Merged_from_n_entries"] = len(group)
-            merged_rows.append(selected)
+        print("[INFO] Localities standardized based on most frequent value per postal code.")
+            # drop streetFacadeWidth why? >80% are empty and there's no logical value that we can put in
+        df.drop("streetFacadeWidth", axis =1)
+        # drop rows where price is not mentioned : 2.737629 % of proprities without price
+        df= df.dropna(subset=["price"])
+        """
+        Convert column types safely, replacing invalid or NaN entries where necessary.
+        """
+        int_cols = [
+            "hasAirConditioning", "hasSwimmingPool", "hasDressingRoom", "hasFireplace",
+            "hasThermicPanels", "hasArmoredDoor", "hasHeatPump", "hasPhotovoltaicPanels",
+            "hasOffice", "hasAttic", "hasDiningRoom", "hasVisiophone", "hasGarden",
+            "gardenSurface", "parkingCountOutdoor", "hasLift", "roomCount", "parkingCountIndoor",
+            "hasBasement", "floorCount", "hasLivingRoom", "hasTerrace", "buildingConstructionYear",
+            "facedeCount", "toiletCount", "bathroomCount", "bedroomCount", "postCode","diningRoomSurface",
+            "kitchenSurface","terraceSurface","livingRoomSurface","landSurface","habitableSurface","streetFacadeWidth"
+        ]
 
-        return pd.DataFrame(merged_rows)
+        str_cols = [
+            "gardenOrientation", "terraceOrientation", "kitchenType", "floodZoneType",
+            "heatingType", "buildingCondition", "epcScore", "subtype", "province",
+            "locality", "type"
+        ]
 
-    def clean_errors(self):
-        # clean data value
-        # clean data types
-        # changing False/True to 0/1
-        # clean extra spaces/tabulations inside values
-        pass
+        # Convert integer columns safely
+        for col in int_cols:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors='coerce').fillna(-1).astype(int)
+
+        # Convert string columns safely
+        for col in str_cols:
+            if col in df.columns:
+                df[col]=df[col].fillna("missed value")
+                df[col] = df[col].astype(str).str.strip()
+               
+
+        print("[INFO] All specified column types converted safely.")
+                # changing False/True to 0/1
+                # clean extra spaces/tabulations inside values
+        return(df)
 
     def clean_empty_cells(self):
         # remove empty lines
@@ -79,13 +186,13 @@ class DataCleanner:
         pass
     
     def send_output_file(self, output_file: str):
-            """
-            Exports the cleaned and deduplicated DataFrame to a new CSV file.
-            """
-            cleaned_df = self.clean_duplicates()
-            if not cleaned_df.empty:
-                os.makedirs(os.path.dirname(output_file), exist_ok=True)
-                cleaned_df.to_csv(output_file, index=False)
-                print(f"[SUCCESS] Exported {len(cleaned_df)} merged records → {output_file}")
-            else:
-                print("[WARNING] No data exported due to empty or invalid input.")
+        """""" """
+        Exports the cleaned and deduplicated DataFrame to a new CSV file.
+        """""
+        cleaned_df = self.clean_errors()
+        if not cleaned_df.empty:
+            os.makedirs(os.path.dirname(output_file), exist_ok=True)
+            cleaned_df.to_csv(output_file, index=False)
+            print(f"[SUCCESS] Exported {len(cleaned_df)} merged records → {output_file}")
+        else:
+            print("[WARNING] No data exported due to empty or invalid input.")        
