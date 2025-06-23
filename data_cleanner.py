@@ -3,6 +3,7 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import os
 from pathlib import Path
+import numpy as np
 
 class DataCleanner:
 
@@ -199,12 +200,17 @@ class DataCleanner:
                       'USA_UNINSTALLED':0,'USA_SEMI_EQUIPPED':1,'USA_INSTALLED':2,'USA_HYPER_EQUIPPED':3,'missed value':-1}
         df["kitchenTypeNormalize"]=df["kitchenType"].replace(kitchenTypes)
         return(df)
+    def to_real_value(self):
+        df = self.normalization()
+        df=df.replace(-1, np.nan)
+        return df
+
 
     def send_output_file(self, output_file: str):
         """""" """
         Exports the cleaned and deduplicated DataFrame to a new CSV file.
         """""
-        cleaned_df = self.clean_errors()
+        cleaned_df = self.normalization()
         if not cleaned_df.empty:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
             cleaned_df.to_csv(output_file, index=False)
