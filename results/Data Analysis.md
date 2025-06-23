@@ -62,6 +62,7 @@ We normalized => see code
 
 # Percentage of missing values per column?
 
+<pre>
 Data                        type    Non-null count  Missing count  Missing %  Unique values
 hasAirConditioning          object            1124          79244  98.601433              1
 hasSwimmingPool             object            1816          78552  97.740394              1
@@ -110,3 +111,4 @@ postCode                     int64           80368              0   0.000000    
 province                    object           80368              0   0.000000             11
 locality                    object           80368              0   0.000000           5470
 type                        object           80368              0   0.000000              4
+</pre>
