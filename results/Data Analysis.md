@@ -5,6 +5,10 @@
 - Number of rows = 76370
 - Number of columns = 36
 
+## Plot: Correlation with the variable price
+
+![Correlation with the variable price](../plots/correlation_with_variable_price.png)
+
 ## What is the correlation between the variables and the price? (Why might that be?)
 
 - Positive correlations (e.g., bedroomCount, kitchenTypeNormalize, terraceSurface, landSurface) suggest that larger or more equipped properties tend to have higher prices — which aligns with real estate market expectations.

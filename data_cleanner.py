@@ -10,7 +10,9 @@ import numpy as np
 class DataCleanner:
 
     def __init__(self, data_file_path: str) -> None:
-        """Initialize the DataCleaner with the path to the CSV file."""
+        """
+        Initialize the DataCleaner with the path to the data file.
+        """
         self.data_file_path = data_file_path
 
     def load_data_file(self) -> pd.DataFrame:
