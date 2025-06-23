@@ -12,7 +12,7 @@ cleaner.send_output_file("data/data_cleanned.csv")
 
 # Loading the cleaned file
 #df = pd.read_csv("data/data_cleanned.csv")
-df = cleaner.to_real_value()
+df = cleaner.to_real_values()
 print(df)
 
 # Selecting only numeric columns

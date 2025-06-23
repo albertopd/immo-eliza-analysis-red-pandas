@@ -13,7 +13,7 @@ class DataCleanner:
         """Initialize the DataCleaner with the path to the CSV file."""
         self.data_file_path = data_file_path
 
-    def load_data_file(self):
+    def load_data_file(self) -> pd.DataFrame:
         """
         Load any supported data file and return a pandas DataFrame.
         Supported formats: CSV, JSON, Excel, Parquet, TXT, XML
@@ -73,14 +73,14 @@ class DataCleanner:
         summary = summary.sort_values(by="Missing %", ascending=False)
         return summary
 
-    def clean_duplicates(self):
+    def clean_duplicates(self) -> pd.DataFrame:
         """
         Cleans the dataset by:
         - Removing duplicate rows.
         - Dropping irrelevant or empty fields.
         - Displaying data quality metrics before and after cleaning.
         Returns:
-            cleaned_file (pd.DataFrame): The cleaned dataset.
+            cleaned_df (pd.DataFrame): The cleaned dataset.
         """
 
         # Step 1: Load the raw dataset
@@ -94,7 +94,7 @@ class DataCleanner:
         print(summary_before)
 
         # Step 2: Remove exact duplicates
-        cleaned_file = df.drop_duplicates()
+        cleaned_df = df.drop_duplicates()
 
         # Step 3: Drop irrelevant or problematic columns (if they exist)
         columns_to_drop = [
@@ -105,14 +105,14 @@ class DataCleanner:
             "Unnamed: 0",
             "id"
         ]
-        cleaned_file.drop(columns=[col for col in columns_to_drop if col in cleaned_file.columns], inplace=True)
+        cleaned_df.drop(columns=[col for col in columns_to_drop if col in cleaned_df.columns], inplace=True)
 
         # Step 4: Show data quality summary after cleaning
         print("\n📊 Data Quality AFTER cleaning:")
-        summary_after = self.analyze_data_quality(cleaned_file)
+        summary_after = self.analyze_data_quality(cleaned_df)
         print(summary_after)
 
-        return cleaned_file
+        return cleaned_df
         
     def clean_errors(self) -> pd.DataFrame:
         """
@@ -142,13 +142,14 @@ class DataCleanner:
         df["locality"] = df["postCode"].map(most_common_locality)
 
         print("[INFO] Localities standardized based on most frequent value per postal code.")
-            # drop streetFacadeWidth why? >80% are empty and there's no logical value that we can put in
-        df.drop("streetFacadeWidth", axis =1)
+
+        # drop streetFacadeWidth why? >80% are empty and there's no logical value that we can put in
+        df.drop("streetFacadeWidth", axis=1)
+
         # drop rows where price is not mentioned : 2.737629 % of proprities without price
-        df= df.dropna(subset=["price"])
-        """
-        Convert column types safely, replacing invalid or NaN entries where necessary.
-        """
+        df = df.dropna(subset=["price"])
+
+        # Convert column types safely, replacing invalid or NaN entries where necessary.
         int_cols = [
             "hasAirConditioning", "hasSwimmingPool", "hasDressingRoom", "hasFireplace",
             "hasThermicPanels", "hasArmoredDoor", "hasHeatPump", "hasPhotovoltaicPanels",
@@ -173,45 +174,106 @@ class DataCleanner:
         # Convert string columns safely
         for col in str_cols:
             if col in df.columns:
-                df[col]=df[col].fillna("missed value")
+                df[col]=df[col].fillna("missing value")
                 df[col] = df[col].astype(str).str.strip()
                
-
         print("[INFO] All specified column types converted safely.")
-                # changing False/True to 0/1
-                # clean extra spaces/tabulations inside values
-        return(df)
 
-    def normalization(self):
-
-        df= self.clean_errors()
-        
-        building_conditions = {"GOOD":1,"AS_NEW":2,"TO_RENOVATE":3, "TO_BE_DONE_UP":4,"JUST_RENOVATED":5,"TO_RESTORE":6,'missed value':-1}
-        df["buildingConditionNormalize"]=df["buildingCondition"].replace(building_conditions)
-        epcScores = {'A++':1,'A+':2,'A':3,'B':4,'C':5,'D':6,'E':7,'F':8,'G':9,'G_C':9,'F_D':8,'C_A':5,'F_C':8,
-                     'E_C':7,'C_B':5,'E_D':7,'G_F':9,'D_C':6,'G_E':9,'X':0,'missed value':-1}
-        df["epcScoreNormalize"]=df["epcScore"].replace(epcScores)
-        heatingTypes={'GAS':1,'FUELOIL':2,'ELECTRIC':3,'PELLET':4,'WOOD':5,'SOLAR':6,'CARBON':7,'missed value':-1}
-        df["heatingTypeNormalize"]=df["heatingType"].replace(heatingTypes)
-        floodZoneTypes={'NON_FLOOD_ZONE':1,'POSSIBLE_FLOOD_ZONE':2,'RECOGNIZED_FLOOD_ZONE':3,
-                        'RECOGNIZED_N_CIRCUMSCRIBED_FLOOD_ZONE':4,'CIRCUMSCRIBED_WATERSIDE_ZONE':5,
-                        'CIRCUMSCRIBED_FLOOD_ZONE':6,'POSSIBLE_N_CIRCUMSCRIBED_FLOOD_ZONE':7,
-                        'POSSIBLE_N_CIRCUMSCRIBED_WATERSIDE_ZONE':8,'RECOGNIZED_N_CIRCUMSCRIBED_WATERSIDE_FLOOD_ZONE':9,'missed value':-1}
-        df["floodZoneTypeNormalize"]=df["floodZoneType"].replace(floodZoneTypes)
-        kitchenTypes={'NOT_INSTALLED':0,'SEMI_EQUIPPED':1,'INSTALLED':2,'HYPER_EQUIPPED':3,
-                      'USA_UNINSTALLED':0,'USA_SEMI_EQUIPPED':1,'USA_INSTALLED':2,'USA_HYPER_EQUIPPED':3,'missed value':-1}
-        df["kitchenTypeNormalize"]=df["kitchenType"].replace(kitchenTypes)
-        return(df)
-    def to_real_value(self):
-        df = self.normalization()
-        df=df.replace(-1, np.nan)
         return df
 
+    def normalization(self) -> pd.DataFrame:
+        # Get cleaned DataFrame
+        df = self.clean_errors()
+
+        # Normalization mappings
+        building_conditions = {
+            "missing value": -1,
+            "GOOD": 1,
+            "AS_NEW": 2,
+            "TO_RENOVATE": 3, 
+            "TO_BE_DONE_UP": 4,
+            "JUST_RENOVATED": 5,
+            "TO_RESTORE": 6
+        }
+        
+        epc_scores = {
+            "missing value": -1,
+            'A++': 1,
+            'A+': 2,
+            'A': 3,
+            'B': 4,
+            'C': 5,
+            'D': 6,
+            'E': 7,
+            'F': 8,
+            'G': 9,
+            'G_C': 9, # for ranges, we take the lowest score ()
+            'F_D': 8,
+            'C_A': 5,
+            'F_C': 8,
+            'E_C': 7,
+            'C_B': 5,
+            'E_D': 7,
+            'G_F': 9,
+            'D_C': 6,
+            'G_E': 9,
+            'X': 0
+        }
+        
+        heating_types = {
+            "missing value": -1,
+            'GAS': 1,
+            'FUELOIL': 2,
+            'ELECTRIC': 3,
+            'PELLET': 4,
+            'WOOD': 5,
+            'SOLAR': 6,
+            'CARBON': 7
+        }
+
+        flood_zone_types = {
+            "missing value": -1,
+            'NON_FLOOD_ZONE': 1,
+            'POSSIBLE_FLOOD_ZONE': 2,
+            'RECOGNIZED_FLOOD_ZONE': 3,
+            'RECOGNIZED_N_CIRCUMSCRIBED_FLOOD_ZONE': 4,
+            'CIRCUMSCRIBED_WATERSIDE_ZONE': 5,
+            'CIRCUMSCRIBED_FLOOD_ZONE': 6,
+            'POSSIBLE_N_CIRCUMSCRIBED_FLOOD_ZONE': 7,
+            'POSSIBLE_N_CIRCUMSCRIBED_WATERSIDE_ZONE': 8,
+            'RECOGNIZED_N_CIRCUMSCRIBED_WATERSIDE_FLOOD_ZONE': 9
+        }
+
+        kitchen_types = {
+            "missing value": -1,
+            'NOT_INSTALLED': 0,
+            'SEMI_EQUIPPED': 1,
+            'INSTALLED': 2,
+            'HYPER_EQUIPPED': 3,
+            'USA_UNINSTALLED': 0,
+            'USA_SEMI_EQUIPPED': 1,
+            'USA_INSTALLED': 2,
+            'USA_HYPER_EQUIPPED': 3
+        }
+
+        # Apply mappings to normalize categorical columns
+        df["buildingConditionNormalize"] = df["buildingCondition"].replace(building_conditions)
+        df["epcScoreNormalize"] = df["epcScore"].replace(epc_scores)
+        df["heatingTypeNormalize"] = df["heatingType"].replace(heating_types)
+        df["floodZoneTypeNormalize"] = df["floodZoneType"].replace(flood_zone_types)
+        df["kitchenTypeNormalize"] = df["kitchenType"].replace(kitchen_types)
+
+        return df
+    
+    def to_real_values(self) -> pd.DataFrame:
+        df = self.normalization()
+        df = df.replace(-1, np.nan)
+        return df
 
     def send_output_file(self, output_file: str):
-        """""" """
+        """
         Exports the cleaned and deduplicated DataFrame to a new CSV file.
-        """""
+        """
         cleaned_df = self.normalization()
         if not cleaned_df.empty:
             os.makedirs(os.path.dirname(output_file), exist_ok=True)
