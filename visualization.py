@@ -1,37 +1,34 @@
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
-from data_cleanner import DataCleanner
 import matplotlib
-matplotlib.use('TkAgg')  
+from data_cleanner import DataCleanner
 
+matplotlib.use('TkAgg')
 
-
-# Initialisation et nettoyage des données
+# Initialization and data cleaning
 cleaner = DataCleanner("data/immoweb-dataset.csv")
 cleaner.send_output_file("data/data_cleanned.csv")
 
-# Chargement du fichier nettoyé
+# Loading the cleaned file
 #df = pd.read_csv("data/data_cleanned.csv")
 df = cleaner.to_real_value()
 print(df)
-# Sélection des colonnes numériques uniquement
+
+# Selecting only numeric columns
 numeric_df = df.select_dtypes(include=["int64", "float64"])
 
-# Vérification de la présence de la colonne 'price'
-if 'price' not in numeric_df.columns:
-    raise ValueError("❌ La colonne 'price' est absente du dataset.")
-
-# Calcul de la matrice de corrélation
+# Calculation of the correlation matrix
 corr_matrix = numeric_df.corr()
 
-# Extraction des corrélations avec 'price'
+# Extracting correlations with 'price'
 price_corr = corr_matrix["price"].drop("price").sort_values()
 
-# Visualisation graphique
+# Graphical visualization
 plt.figure(figsize=(10, 6))
 sns.barplot(x=price_corr.values, y=price_corr.index, hue=price_corr.index, palette="coolwarm", dodge=False, legend=False)
-plt.title("Corrélation avec la variable 'price'")
-plt.xlabel("Coefficient de corrélation")
+plt.title("Correlation with the variable 'price'")
+plt.xlabel("Correlation coefficient")
+plt.ylabel("Features")
 plt.tight_layout()
 plt.show()
