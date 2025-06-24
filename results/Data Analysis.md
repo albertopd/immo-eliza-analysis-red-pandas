@@ -17,8 +17,6 @@
 
 ## How are variables correlated to each other? (Why?)
 
-#TODO: (Alberto) Find correlations between other variables. Create new plots
-
 While the plot doesn’t directly show inter-variable correlations, we can infer that:
 
 - Variables like bedroomCount, roomCount, habitableSurface, landSurface, and bathroomCount are likely positively correlated among themselves — all relate to property size or livability.
@@ -30,6 +28,26 @@ These correlations happen because:
 - Larger properties tend to have more rooms, land, and additional features.
 
 - Energy efficiency (epcScoreNormalize) and building condition might inversely correlate with price due to renovation needs or regulatory impact.
+
+### Correlation Between Count-Based Features (Pearson Correlation)
+
+![Correlation Between Count-Based Features](../plots/count_features_correlations.png)
+
+#### Key Findings
+
+- Strongest Relationships:
+    - **bedroomCount** ↔ **roomCount** (0.29): More bedrooms = more total rooms (makes sense!)
+    - **roomCount** ↔ **toiletCount** (0.21): Bigger properties with more rooms tend to have more toilets
+    - **bedroomCount** ↔ **facedCount** (0.17): Properties with more bedrooms often have more building faces/sides
+- Surprising Weak Relationships:
+    - **parkingCountIndoor** and **parkingCountOutdoor** barely correlate with anything else
+    - **floorCount** is almost independent of everything - tall buildings don't necessarily have more rooms
+    - **bathroomCount** doesn't strongly correlate with bedroom count (only 0.15)
+- What This Tells Us:
+    - **Property size logic**: Bigger properties (more rooms) generally have more bedrooms and toilets - this follows common sense
+    - **Parking is independent**: Having parking doesn't depend on property size, suggesting parking availability might be more about location or property type than size
+    - **Vertical vs horizontal growth**: Number of floors doesn't correlate with room counts, meaning properties can be big horizontally or vertically
+    - **Bathroom-bedroom mismatch**: The weak correlation (0.15) between bathrooms and bedrooms suggests many properties don't follow the "one bathroom per bedroom" rule
 
 ## Which variables have the greatest influence on the price?
 
@@ -237,4 +255,6 @@ locality                    object           80368              0   0.000000    
 type                        object           80368              0   0.000000              4
 </pre>
 
-#TODO: (Alberto) Maybe display some pie charts showing existing values vs. missing values for some variables (maybe the most influencial variables)
+### Missing Data Percentages Afte Cleanup
+
+![Missing Data Percentages](../plots/missing_values_percentage.png)
