@@ -17,7 +17,7 @@
 
 ## How are variables correlated to each other? (Why?)
 
-#TODO: Find correlations between other variables. Create new plots
+#TODO: (Alberto) Find correlations between other variables. Create new plots
 
 While the plot doesn’t directly show inter-variable correlations, we can infer that:
 
@@ -237,4 +237,4 @@ locality                    object           80368              0   0.000000    
 type                        object           80368              0   0.000000              4
 </pre>
 
-#TODO: Maybe display some pie charts showing existing values vs. missing values for some variables (maybe the most influencial variables)
+#TODO: (Alberto) Maybe display some pie charts showing existing values vs. missing values for some variables (maybe the most influencial variables)

@@ -18,7 +18,7 @@
 
 ## Represent the number of properties according to their surface using a histogram.
 
-#TODO: Create histogram for number of properties according to their surface
+#TODO: (Charly) Create histogram for number of properties according to their surface
 
 ## In your opinion, which 5 variables are the most important and why?
 
@@ -33,28 +33,28 @@ Rank	Feature	                Correlation     Coefficient	Interpretation
 
 ## What are the most expensive municipalities in Belgium? (Average price, median price, price per square meter)
 
-#TODO: Find out most expensive municipalities in Belgium. Create plot
+#TODO: (Charly) Find out most expensive municipalities in Belgium. Create plot
 
 ## What are the most expensive municipalities in Wallonia? (Average price, median price, price per square meter)
 
-#TODO: Find out most expensive municipalities in Wallonia. Create plot
+#TODO: (Charly) Find out most expensive municipalities in Wallonia. Create plot
 
 ## What are the most expensive municipalities in Flanders? (Average price, median price, price per square meter)
 
-#TODO: Find out most expensive municipalities in Flanders. Create plot
+#TODO: (Charly) Find out most expensive municipalities in Flanders. Create plot
 
 ## What are the less expensive municipalities in Belgium? (Average price, median price, price per square meter)
 
-#TODO: Find out less expensive municipalities in Belgium. Create plot
+#TODO: (Hajer) Find out less expensive municipalities in Belgium. Create plot
 
 ## What are the less expensive municipalities in Wallonia? (Average price, median price, price per square meter)
 
-#TODO: Find out less expensive municipalities in Wallonia. Create plot
+#TODO: (Hajer) Find out less expensive municipalities in Wallonia. Create plot
 
 ## What are the less expensive municipalities in Flanders? (Average price, median price, price per square meter)
 
-#TODO: Find out less expensive municipalities in Flanders. Create plot
+#TODO: (Hajer) Find out less expensive municipalities in Flanders. Create plot
 
-## Other ineterpretations?
+## Other interpretations?
 
-#TODO: Find other interpretations and create plots
+#TODO: (Hajer) Find other interpretations and create plots
