@@ -1,5 +1,3 @@
-import seaborn as sns
-import matplotlib.pyplot as plt
 import matplotlib
 from data_cleanner import DataCleanner
 from visualization import plot_correlations_to_price

@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import matplotlib
 import pandas as pd
 import matplotlib.patches as mpatches
-from matplotlib.lines import Line2D
 
 matplotlib.use('TkAgg')
 
