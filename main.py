@@ -20,3 +20,5 @@ plot_correlations_to_price(df, "plots/correlation_with_variable_price.png", True
 # Plot the outliers
 # TODO: Only plot outliers for meaningful variables
 #plot_outliers(df, "plots/all_features_outliers.png", True)
+
+# Other plots...
