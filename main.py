@@ -2,7 +2,9 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
 from data_cleanner import DataCleanner
-from visualization import plot_correlations_to_price, plot_outliers
+from visualization import plot_correlations_to_price
+from visualization import plot_outliers
+from visualization import plot_count_features_correlations
 
 matplotlib.use('TkAgg')
 
@@ -15,7 +17,8 @@ df = cleaner.to_real_values() # Convert -1 values to NaN so they are not include
 plot_correlations_to_price(df, "plots/correlation_with_variable_price.png", True)
 
 # Plot other correlations
-# TODO: (Alberto) Create new plots for correlations between other variables
+# Correlation between count-based features (Pearson Correlation)
+plot_count_features_correlations(df, "plots/count_features_correlations.png", True)
 
 # Plot the outliers
 plot_outliers(df, "plots/outliers.png", True)

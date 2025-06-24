@@ -127,3 +127,57 @@ def plot_outliers(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> Non
 
     except Exception as e:
         print(f"[ERRO] Failed to plot outliers => {e}")
+
+def plot_count_features_correlations(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
+    try:
+        # Define count-related columns
+        count_columns = [
+            "bathroomCount",
+            "bedroomCount",
+            "facedeCount",
+            "floorCount",
+            "parkingCountIndoor",
+            "parkingCountOutdoor",
+            "roomCount",
+            "toiletCount"
+        ]
+
+        # Subset the DataFrame
+        count_df = df[count_columns]
+
+        # Compute the correlation matrix
+        corr_matrix = count_df.corr()
+
+        # Set up the plot
+        plt.figure(figsize=(10, 8))
+        heatmap = sns.heatmap(
+            corr_matrix,
+            annot=True,
+            fmt=".2f",
+            cmap="coolwarm",
+            square=True,
+            cbar_kws={"label": "Pearson Correlation Coefficient"}
+        )
+
+        # Title and labels
+        plt.title("Correlation Between Count-Based Features", fontsize=14, fontweight="bold", pad=12)
+        plt.xlabel("Features (unit: count)", fontsize=12)
+        plt.ylabel("Features (unit: count)", fontsize=12)
+
+        # Improve layout and prevent text overlapping
+        plt.xticks(rotation=45, ha="right")
+        plt.yticks(rotation=0)
+        plt.tight_layout()
+
+        if plot_file_path:
+            # Save outliers plot to file
+            plt.savefig(plot_file_path, dpi=150)
+            print(f"Count Features Correlations plot saved to file: {plot_file_path}")
+
+        if show_plot:
+            # Show outliers plot on screen
+            print(f"Showing plot for Count Features Correlations...")
+            plt.show()
+
+    except Exception as e:
+        print(f"[ERRO] Failed to plot Count Features Correlations => {e}")

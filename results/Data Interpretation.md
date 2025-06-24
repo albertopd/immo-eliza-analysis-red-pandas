@@ -18,7 +18,7 @@
 - Well-Behaved Features (Green numbers = few outliers):
     - **roomCount** (121) and **diningRoomSurface** (372 outliers): relatively normal
     - **facadeCount** (14 outliers):  very consistent across properties 
-- What This Means for Real Estate:
+- What This Tells Us:
     - **Price Variation**: The real estate market has extreme price diversity - from very cheap to very expensive properties, which is typical for real estate markets
     - **Property Size Diversity**: There's huge variation in property sizes, from tiny apartments to large estates
     - **Standard Features**: Basic features like number of rooms and facades are fairly consistent, suggesting most properties follow common architectural patterns
