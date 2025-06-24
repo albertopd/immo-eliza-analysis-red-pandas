@@ -2,6 +2,8 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib
 import pandas as pd
+import matplotlib.patches as mpatches
+from matplotlib.lines import Line2D
 
 matplotlib.use('TkAgg')
 
@@ -34,34 +36,94 @@ def plot_correlations_to_price(df: pd.DataFrame, plot_file_path: str, show_plot:
         if plot_file_path:
             # Save correlations plot to file
             plt.savefig(plot_file_path, dpi=300)
+            print(f"Correlation with the variable 'price' plot saved to file: {plot_file_path}")
 
         if show_plot:
             # Show correlations plot on screen
-            plt.show()      
+            print(f"Showing plot for correlation with the variable 'price'...")
+            plt.show()
+
     except Exception as e:
-        print(f"[ERRO] Failed to plot correlations => {e}")
+        print(f"[ERRO] Failed to plot correlations with the the variable 'price' => {e}")
 
 def plot_outliers(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
     try:
         # Select only numeric columns
         numeric_df = df.select_dtypes(include=["int64", "float64"])
 
-        # Melt the dataframe into long format
-        melted = numeric_df.melt(var_name="Feature", value_name="Value")
+        # Detect columns with outliers using the IQR method
+        def outlier_count(series):
+            Q1 = series.quantile(0.25)
+            Q3 = series.quantile(0.75)
+            IQR = Q3 - Q1
+            lower = Q1 - 1.5 * IQR
+            upper = Q3 + 1.5 * IQR
+            return ((series < lower) | (series > upper)).sum()
 
-        # Plotting outliers
-        plt.figure(figsize=(14, 8))
-        sns.boxplot(x="Feature", y="Value", data=melted)
-        plt.xticks(rotation=45)
-        plt.title("Outliers in All Numeric Features")
+        # Create a dictionary with outlier counts
+        outlier_counts = {col: outlier_count(numeric_df[col]) for col in numeric_df.columns}
+        print(outlier_count)
+        columns_with_outliers = {col: count for col, count in outlier_counts.items() if count > 0}
+        print(columns_with_outliers)
+
+        # Filter DataFrame
+        filtered_df = numeric_df[list(columns_with_outliers.keys())]
+
+        # Melt the dataframe into long format
+        melted = filtered_df.melt(var_name="Feature", value_name="Value")
+
+        # Sort features by number of outliers for better readability
+        sorted_features = sorted(columns_with_outliers.items(), key=lambda x: x[1], reverse=True)
+        feature_order = [feat for feat, _ in sorted_features]
+
+        # Plot
+        plt.figure(figsize=(16, 10))
+        ax = sns.boxplot(
+            x="Value",
+            y="Feature",
+            data=melted,
+            order=feature_order,
+            palette="coolwarm",
+            showfliers=True
+        )
+
+        # Annotate outlier counts clearly to the right
+        x_min, x_max = ax.get_xlim()
+        x_range = x_max - x_min
+        offset = x_range * 0.06  # 6% to the right
+
+        for i, feature in enumerate(feature_order):
+            count = columns_with_outliers[feature]
+            x_pos = melted[melted["Feature"] == feature]["Value"].quantile(0.97)
+            
+            color = "lightcoral" if count > 1000 else "green"
+            
+            ax.text(
+                x_pos + offset, i, f"{count}",
+                va='center', ha='left', fontsize=9, fontweight='bold', color=color
+            )
+
+        # Titles and labels
+        plt.title("Outliers in Numeric Features", fontsize=14, fontweight='bold')
+        plt.xlabel("Feature Value (various units)", fontsize=12)
+        plt.ylabel("Feature Name", fontsize=12)
+
+        # Legend
+        normal_patch = mpatches.Patch(color='green', label='Normal outlier count (<= 1000)')
+        extreme_patch = mpatches.Patch(color='lightcoral', label='Extreme outlier count (> 1000)')
+        plt.legend(handles=[normal_patch, extreme_patch], title='Legend', loc='lower right')
+    
         plt.tight_layout()
 
-        # Save outliers plot to file
         if plot_file_path:
-            plt.savefig(plot_file_path, dpi=300)
+            # Save outliers plot to file
+            plt.savefig(plot_file_path, dpi=150)
+            print(f"Outliers plot saved to file: {plot_file_path}")
 
         if show_plot:
             # Show outliers plot on screen
+            print(f"Showing plot for outliers...")
             plt.show()
+
     except Exception as e:
         print(f"[ERRO] Failed to plot outliers => {e}")
