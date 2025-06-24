@@ -31,7 +31,7 @@ These correlations happen because:
 
 ### Correlation Between Count-Based Features (Pearson Correlation)
 
-![Correlation with the variable price](../plots/count_features_correlations.png)
+![Correlation Between Count-Based Features](../plots/count_features_correlations.png)
 
 #### Key Findings
 
@@ -255,4 +255,6 @@ locality                    object           80368              0   0.000000    
 type                        object           80368              0   0.000000              4
 </pre>
 
-#TODO: (Alberto) Maybe display some pie charts showing existing values vs. missing values for some variables (maybe the most influencial variables)
+### Missing Data Percentages Afte Cleanup
+
+![Missing Data Percentages](../plots/missing_values_percentage.png)

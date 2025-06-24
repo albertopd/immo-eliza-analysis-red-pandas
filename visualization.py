@@ -170,7 +170,7 @@ def plot_count_features_correlations(df: pd.DataFrame, plot_file_path: str, show
 
         if plot_file_path:
             # Save outliers plot to file
-            plt.savefig(plot_file_path, dpi=150)
+            plt.savefig(plot_file_path, dpi=300)
             print(f"Count Features Correlations plot saved to file: {plot_file_path}")
 
         if show_plot:
@@ -180,3 +180,47 @@ def plot_count_features_correlations(df: pd.DataFrame, plot_file_path: str, show
 
     except Exception as e:
         print(f"[ERRO] Failed to plot Count Features Correlations => {e}")
+
+def plot_missing_values_percentage(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
+    try:
+        # Calculate missing data information
+        missing_data = df.isna().sum()
+        missing_pct = (missing_data / len(df)) * 100
+
+        # Filter to features with missing values
+        missing_df = missing_pct[missing_pct > 0].sort_values(ascending=False)
+
+        # Set up the plot
+        plt.figure(figsize=(12, 8))
+        bars = plt.barh(missing_df.index, missing_df.values, color=plt.cm.tab20.colors[:len(missing_df)])
+
+        # Axis Labels and Title (with units)
+        plt.xlabel("Missing Percentage (%)", fontsize=12)
+        plt.ylabel("Feature", fontsize=12)
+        plt.title("Missing Values Percentage per Feature", fontsize=14, fontweight="bold", pad=15)
+
+        # Add text annotations to the end of each bar (no overlapping if sorted properly)
+        for bar in bars:
+            width = bar.get_width()
+            plt.text(width + 1,                    # small horizontal offset to the right
+                    bar.get_y() + bar.get_height()/2,
+                    f"{width:.1f}%", 
+                    va='center', fontsize=10, fontweight="bold")
+
+        # Invert y-axis so that features with highest missing % appear at the top
+        plt.gca().invert_yaxis()
+
+        plt.tight_layout()
+
+        if plot_file_path:
+            # Save outliers plot to file
+            plt.savefig(plot_file_path, dpi=300)
+            print(f"Missing Values Percentage plot saved to file: {plot_file_path}")
+
+        if show_plot:
+            # Show outliers plot on screen
+            print(f"Showing plot for Missing Values Percentage...")
+            plt.show()
+
+    except Exception as e:
+        print(f"[ERRO] Failed to plot Missing Values Percentage => {e}")

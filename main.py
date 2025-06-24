@@ -3,6 +3,7 @@ from data_cleanner import DataCleanner
 from visualization import plot_correlations_to_price
 from visualization import plot_outliers
 from visualization import plot_count_features_correlations
+from visualization import plot_missing_values_percentage
 
 matplotlib.use('TkAgg')
 
@@ -21,4 +22,5 @@ plot_count_features_correlations(df, "plots/count_features_correlations.png", Tr
 # Plot the outliers
 plot_outliers(df, "plots/outliers.png", True)
 
-# Other plots...
+# Plot missing values percentages
+plot_missing_values_percentage(df, "plots/missing_values_percentage.png", True)
