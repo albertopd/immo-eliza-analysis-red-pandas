@@ -17,6 +17,8 @@
 
 ## How are variables correlated to each other? (Why?)
 
+#TODO: Find correlations between other variables. Create new plots
+
 While the plot doesn’t directly show inter-variable correlations, we can infer that:
 
 - Variables like bedroomCount, roomCount, habitableSurface, landSurface, and bathroomCount are likely positively correlated among themselves — all relate to property size or livability.
@@ -69,8 +71,55 @@ Rank    Feature             Correlation
 
 ## How many qualitative and quantitative variables are there? 
 
-- Qualitative: 17
-- Quantitative: 19
+- Qualitative (str): 17
+    - buildingCondition       
+    - epcScore                
+    - floodZoneType           
+    - gardenOrientation       
+    - hasAirConditioning      
+    - hasArmoredDoor          
+    - hasAttic                
+    - hasBasement             
+    - hasDiningRoom           
+    - hasDressingRoom         
+    - hasFireplace            
+    - hasGarden               
+    - hasHeatPump             
+    - hasLift                 
+    - hasLivingRoom           
+    - hasOffice               
+    - hasPhotovoltaicPanels   
+    - hasSwimmingPool         
+    - hasTerrace              
+    - hasThermicPanels        
+    - hasVisiophone           
+    - heatingType             
+    - kitchenType             
+    - locality                
+    - province                
+    - subtype                 
+    - terraceOrientation      
+    - type                    
+- Quantitative (int, float): 19
+    - bathroomCount           
+    - bedroomCount            
+    - buildingConstructionYear
+    - diningRoomSurface       
+    - facedeCount             
+    - floorCount              
+    - gardenSurface           
+    - habitableSurface        
+    - kitchenSurface          
+    - landSurface             
+    - livingRoomSurface       
+    - parkingCountIndoor      
+    - parkingCountOutdoor     
+    - postCode                
+    - price                   
+    - roomCount               
+    - streetFacadeWidth       
+    - terraceSurface          
+    - toiletCount      
 
 ## How would you transform these values into numerical values?
 
@@ -187,3 +236,5 @@ province                    object           80368              0   0.000000    
 locality                    object           80368              0   0.000000           5470
 type                        object           80368              0   0.000000              4
 </pre>
+
+#TODO: Maybe display some pie charts showing existing values vs. missing values for some variables (maybe the most influencial variables)

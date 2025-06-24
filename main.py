@@ -14,6 +14,9 @@ cleaner.send_output_file("data/data_cleanned.csv")
 df = cleaner.to_real_values() # Convert -1 values to NaN so they are not included in the correlation
 plot_correlations_to_price(df, "plots/correlation_with_variable_price.png", True)
 
+# Plot other correlations
+# TODO: Create new plots for correlations between other variables
+
 # Plot the outliers
-# TODO: only plot outliers for meaningful variable
-plot_outliers(df, "plots/all_features_outliers.png", True)
+# TODO: Only plot outliers for meaningful variables
+#plot_outliers(df, "plots/all_features_outliers.png", True)
