@@ -53,7 +53,7 @@ python main.py
 
 ---
 
-## 📈 Visual Outputs
+## 📈 Outputs
 
 ### 🧼 Data Quality & Distribution
 - **01_missing_values_percentage.png**  
@@ -75,9 +75,9 @@ python main.py
 - **06_big_surface_boxplot.png** / **10_big_surface_boxplot.png**  
   Boxplot showing price distribution for properties with very large surfaces (above 1000 m²).
 
-### 💰 Top 10 Most Expensive Municipalities
+### 💰 Most Expensive Municipalities
 - **06_top_expensive_belgium.png** / **07_top_expensive_belgium.png**  
-  Top 10 most expensive municipalities across Belgium based on average, median, and €/m².
+  Most expensive municipalities across Belgium based on average, median, and €/m².
 
 - **07_top_expensive_wallonia.png** / **08_top_expensive_wallonia.png**  
   Most expensive municipalities in Wallonia.
@@ -88,7 +88,7 @@ python main.py
 - **09_top_expensive_bruxelles.png** / **10_top_expensive_bruxelles.png**  
   Most expensive municipalities in Brussels.
 
-### 💸 Top 10 Least Expensive Municipalities
+### 💸 Least Expensive Municipalities
 - **11_least_expensive_belgium.png**  
   Least expensive municipalities across Belgium.
 
