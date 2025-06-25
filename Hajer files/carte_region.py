@@ -2,7 +2,7 @@ import plotly.express as px
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from data_cleanner import DataCleanner
+from src.data_cleanner import DataCleanner
 from dash import Dash, dcc, html, Input, Output
 
 

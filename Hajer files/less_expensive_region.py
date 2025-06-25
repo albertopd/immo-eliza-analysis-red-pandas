@@ -1,7 +1,7 @@
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from data_cleanner import DataCleanner
+from src.data_cleanner import DataCleanner
 
 
 data = DataCleanner("data/cleaned_properties.csv")

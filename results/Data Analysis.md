@@ -7,7 +7,7 @@
 
 ## Plot: Correlation with the variable price
 
-![Correlation with the variable price](../plots/correlation_with_variable_price.png)
+![Correlation with the variable price](../plots/02_correlation_with_variable_price.png)
 
 ## What is the correlation between the variables and the price? (Why might that be?)
 
@@ -31,7 +31,7 @@ These correlations happen because:
 
 ### Correlation Between Count-Based Features (Pearson Correlation)
 
-![Correlation Between Count-Based Features](../plots/count_features_correlations.png)
+![Correlation Between Count-Based Features](../plots/03_count_features_correlations.png)
 
 #### Key Findings
 
@@ -257,4 +257,4 @@ type                        object           80368              0   0.000000    
 
 ### Missing Data Percentages Afte Cleanup
 
-![Missing Data Percentages](../plots/missing_values_percentage.png)
+![Missing Data Percentages](../plots/01_missing_values_percentage.png)

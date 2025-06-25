@@ -2,7 +2,7 @@
 
 ## Plot the outliers
 
-![Outliers in All Numeric Features](../plots/outliers.png)
+![Outliers in All Numeric Features](../plots/04_outliers.png)
 
 ### Key Insights
 
@@ -41,7 +41,7 @@
 
 ## Represent the number of properties according to their surface using a histogram.
 
-#TODO: (Charly) Create histogram for number of properties according to their surface
+![Number of properties according to their surface](../plots/05_histogram_surface.png)
 
 ## In your opinion, which 5 variables are the most important and why?
 
@@ -56,15 +56,19 @@ Rank	Feature	                Correlation     Coefficient	Interpretation
 
 ## What are the most expensive municipalities in Belgium? (Average price, median price, price per square meter)
 
-#TODO: (Charly) Find out most expensive municipalities in Belgium. Create plot
+![Number of properties according to their surface](../plots/06_top_expensive_belgium.png)
 
 ## What are the most expensive municipalities in Wallonia? (Average price, median price, price per square meter)
 
-#TODO: (Charly) Find out most expensive municipalities in Wallonia. Create plot
+![Number of properties according to their surface](../plots/07_top_expensive_wallonia.png)
 
 ## What are the most expensive municipalities in Flanders? (Average price, median price, price per square meter)
 
-#TODO: (Charly) Find out most expensive municipalities in Flanders. Create plot
+![Number of properties according to their surface](../plots/08_top_expensive_flander.png)
+
+## What are the most expensive municipalities in Brussels? (Average price, median price, price per square meter)
+
+![Number of properties according to their surface](../plots/09_top_expensive_bruxelles.png)
 
 ## What are the less expensive municipalities in Belgium? (Average price, median price, price per square meter)
 
