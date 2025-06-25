@@ -7,12 +7,12 @@ A data analysis project for **Immoweb**, a Belgian real estate company, aiming t
 
 ## 🔍 Project Overview
 
-Analyze a dataset of Belgian property listings (scraped from Immoweb) to:
-
-- Uncover key features influencing property prices (e.g., area, number of rooms, location)
-- Clean and process data (handle missing values, remove, normalize categorical columns)
-- Conduct exploratory data analysis using visualizations: distributions, correlations, maps, heatmaps
-- Provide actionable insights reinforced by clear visual outputs
+Analyze a real estate dataset from Immoweb to:
+- Clean and preprocess raw data (remove duplicates, handle missing values, standardize formats).
+- Explore data quality, feature distributions, and relationships.
+- Visualize insights: missing data, correlations, outliers, surface distributions.
+- Identify the most and least expensive municipalities across Belgium, Wallonia, Flanders, and Brussels.
+- Build a foundation for predictive modeling and strategic insights.
 
 ---
 
@@ -41,15 +41,19 @@ python main.py
 
 ---
 
-## 📊 Data Analysis Highlights
+## 📈 Data Analysis Highlights
 
-- **Dataset size & structure**: ~5,700 rows × 32 columns; many fields like `Garden_Area`, `LandSurface` had >50% missing values.
-- **Feature removal**: Columns like `Open_fire`, `Swimming_pool`, `TypeSale` removed due to low variance or rarity (<5% occurrence).
-- **Outlier treatment**: Reduced noise using IQR-based detection on price distributions.
-- **Correlation insights**:
-  - Moderate to strong positive relationships between `Price` & (`Bedrooms`, `Living_area`)
-  - Strong inter-correlation between `Bedrooms` & `Living_area`
-- **Spatial analysis**: Mapped average prices across Belgium, spotlighting priciest localities per region.
+### 🧼 Data Quality & Distributions
+
+- Missing Data: Features like gardenSurface and epcScore show high missing ratios → informed filling/removal.
+- Feature–Price Correlations: Surface area and room counts strongly correlate with price.
+- Count-Feature Interrelations: Rooms, bathrooms, and facades intercorrelate — watch for multicollinearity in models.
+- Outlier Detection: Boxplots highlight features with extreme values needing capping or removal.
+
+### 📐 Surface Insights
+
+- Surface Distribution: Most properties are small to mid-size with a long tail of large homes.
+- Large-Surface Price: Properties > 1,000 m² command high prices, with visible variability across listings.
 
 ---
 
@@ -100,14 +104,6 @@ python main.py
 
 - **14_least_expensive_bruxelles.png**  
   Least expensive municipalities in Brussels.
-
----
-
-## 📝 Insights & Recommendations
-
-- **Top influencers of price**: living area, bedroom count, property state, location.
-- **Data-driven adjustments**: consider standardizing property types and refining missing-value imputation.
-- **Business implications**: Target marketing efforts and valuation models towards variables with strongest price correlation; highlight high-value localities in Brussels and Flanders.
 
 ---
 
