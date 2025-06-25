@@ -56,32 +56,32 @@ Rank	Feature	                Correlation     Coefficient	Interpretation
 
 ## What are the most expensive municipalities in Belgium? (Average price, median price, price per square meter)
 
-![Number of properties according to their surface](../plots/06_top_expensive_belgium.png)
+![What are the most expensive municipalities in Belgium?](../plots/07_top_expensive_belgium.png)
 
 ## What are the most expensive municipalities in Wallonia? (Average price, median price, price per square meter)
 
-![Number of properties according to their surface](../plots/07_top_expensive_wallonia.png)
+![What are the most expensive municipalities in Wallonia?](../plots/08_top_expensive_wallonia.png)
 
 ## What are the most expensive municipalities in Flanders? (Average price, median price, price per square meter)
 
-![Number of properties according to their surface](../plots/08_top_expensive_flander.png)
+![What are the most expensive municipalities in Flanders?](../plots/09_top_expensive_flander.png)
 
 ## What are the most expensive municipalities in Brussels? (Average price, median price, price per square meter)
 
-![Number of properties according to their surface](../plots/09_top_expensive_bruxelles.png)
+![What are the most expensive municipalities in Brussels?](../plots/10_top_expensive_bruxelles.png)
 
 ## What are the less expensive municipalities in Belgium? (Average price, median price, price per square meter)
 
-#TODO: (Hajer) Find out less expensive municipalities in Belgium. Create plot
+![What are the less expensive municipalities in Belgium?](../plots/11_least_expensive_belgium.png)
 
 ## What are the less expensive municipalities in Wallonia? (Average price, median price, price per square meter)
 
-#TODO: (Hajer) Find out less expensive municipalities in Wallonia. Create plot
+![What are the less expensive municipalities in Wallonia?](../plots/12_least_expensive_wallonia.png)
 
 ## What are the less expensive municipalities in Flanders? (Average price, median price, price per square meter)
 
-#TODO: (Hajer) Find out less expensive municipalities in Flanders. Create plot
+![What are the less expensive municipalities in Flanders?](../plots/13_least_expensive_flander.png)
 
-## Other interpretations?
+## What are the less expensive municipalities in Brussels? (Average price, median price, price per square meter)
 
-#TODO: (Hajer) Find other interpretations and create plots
+![What are the less expensive municipalities in Brussels?](../plots/14_least_expensive_bruxelles.png)
