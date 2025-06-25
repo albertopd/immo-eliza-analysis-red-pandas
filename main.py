@@ -1,8 +1,7 @@
-import seaborn as sns
-import matplotlib.pyplot as plt
 import matplotlib
-from data_cleanner import DataCleanner
-from visualization import plot_correlations_to_price, plot_outliers
+from src.data_cleanner import DataCleanner
+from src.data_analysis_plots import data_analysis_plots
+from src.data_interpretation_plots import data_interpretation_plots
 
 matplotlib.use('TkAgg')
 
@@ -10,15 +9,9 @@ matplotlib.use('TkAgg')
 cleaner = DataCleanner("data/immoweb-dataset.csv")
 cleaner.send_output_file("data/data_cleanned.csv")
 
-# Plot correlations to price
-df = cleaner.to_real_values() # Convert -1 values to NaN so they are not included in the correlation
-plot_correlations_to_price(df, "plots/correlation_with_variable_price.png", True)
+# Convert -1 values to NaN so they are not included in the correlation
+df = cleaner.to_real_values() 
 
-# Plot other correlations
-# TODO: (Alberto) Create new plots for correlations between other variables
+data_analysis_plots(df, True)
 
-# Plot the outliers
-# TODO: (Aberto) Only plot outliers for meaningful variables
-#plot_outliers(df, "plots/all_features_outliers.png", True)
-
-# Other plots...
+data_interpretation_plots(df, True)
