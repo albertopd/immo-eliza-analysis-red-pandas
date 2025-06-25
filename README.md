@@ -105,6 +105,18 @@ python main.py
 - **14_least_expensive_bruxelles.png**  
   Least expensive municipalities in Brussels.
 
+### 📄 Summaries
+
+- **summary_by_locality.csv**
+  Summary by locality of  number of properties, average price, median price and price per m2
+
+- **most_popular_type.csv**
+  Most common property type (apartment vs. house)
+- **price_matrix_apartment_house.csv**
+  Price matrix of apartment vs house.
+- **piecharts folder**
+  Piecharts showing distribution of property subtypes by locality
+
 ---
 
 ## ⏳ Project Timeline
