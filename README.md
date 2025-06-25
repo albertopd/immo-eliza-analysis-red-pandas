@@ -112,8 +112,10 @@ python main.py
 
 - **most_popular_type.csv**
   Most common property type (apartment vs. house)
+
 - **price_matrix_apartment_house.csv**
   Price matrix of apartment vs house.
+  
 - **piecharts folder**
   Piecharts showing distribution of property subtypes by locality
 
@@ -127,7 +129,6 @@ python main.py
 - Day 3: Data interpretation
 
 ---
-
 
 ## 🧰 Requirements
 
