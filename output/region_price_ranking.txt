@@ -1,0 +1,3 @@
+💰 Region price comparison:
+🏆 Most expensive: Flanders — 377,868 € (n=18124)
+🔻 Least expensive: Wallonia — 287,953 € (n=18085)

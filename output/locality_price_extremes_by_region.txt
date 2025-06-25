@@ -1,0 +1,15 @@
+💰 Locality Price Extremes by Region
+===================================
+
+Brussels
+   🏆 Most expensive: WOLUWE-SAINT-PIERRE — 493,022 € (n=227)
+   🔻 Least expensive: MOLENBEEK-SAINT-JEAN — 282,000 € (n=506)
+
+Flanders
+   🏆 Most expensive: HERSTAPPE — 700,000 € (n=1)
+   🔻 Least expensive: REKEM — 181,200 € (n=7)
+
+Wallonia
+   🏆 Most expensive: OGY — 625,000 € (n=2)
+   🔻 Least expensive: BLAIMONT — 84,842 € (n=19)
+

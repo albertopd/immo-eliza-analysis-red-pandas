@@ -132,4 +132,45 @@ most_popular.to_csv("output/most_popular_type.csv", index=False)
 with open("output/most_popular_type.txt", "w") as f:
     f.write(f"🏆 Most sold type: {most_popular.iloc[0]['type']} ({most_popular.iloc[0]['count']} ventes)")
 
-print("✅ Tous les fichiers ont été générés dans le dossier 'output/'.")
+###############################################################################
+# 7. MOST & LEAST EXPENSIVE REGIONS + LOCALITIES
+###############################################################################
+
+# Compute average price by region
+region_prices = df.groupby("region").agg(
+    avg_price=("price", "mean"),
+    count=("price", "count")
+).reset_index().sort_values("avg_price", ascending=False)
+
+# Identify the most and least expensive regions
+most_expensive_region = region_prices.iloc[0]
+least_expensive_region = region_prices.iloc[-1]
+
+with open("output/region_price_ranking.txt", "w") as f:
+    f.write("\U0001f4b0 Region price comparison:\n")
+    f.write(f"🏆 Most expensive: {most_expensive_region['region']} — {most_expensive_region['avg_price']:,.0f} € (n={most_expensive_region['count']})\n")
+    f.write(f"🔻 Least expensive: {least_expensive_region['region']} — {least_expensive_region['avg_price']:,.0f} € (n={least_expensive_region['count']})\n")
+
+# Compute average price per locality within each region
+locality_avg = df.groupby(["region", "locality"]).agg(
+    avg_price=("price", "mean"),
+    count=("price", "count")
+).reset_index()
+
+# Export highest and lowest priced locality per region
+with open("output/locality_price_extremes_by_region.txt", "w") as f:
+    f.write("💰 Locality Price Extremes by Region\n")
+    f.write("===================================\n\n")
+
+    for region, group in locality_avg.groupby("region"):
+        if region == "Unknown":
+            continue
+        sorted_group = group.sort_values("avg_price", ascending=False)
+        most_exp = sorted_group.iloc[0]
+        least_exp = sorted_group.iloc[-1]
+
+        f.write(f"{region}\n")
+        f.write(f"   🏆 Most expensive: {most_exp['locality']} — {most_exp['avg_price']:,.0f} € (n={most_exp['count']})\n")
+        f.write(f"   🔻 Least expensive: {least_exp['locality']} — {least_exp['avg_price']:,.0f} € (n={least_exp['count']})\n\n")
+
+print("\n✅ All reports have been generated in the 'output/' directory.")
