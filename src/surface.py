@@ -7,6 +7,21 @@ import matplotlib.patches as mpatches
 matplotlib.use('TkAgg')
 
 def generate_surface_charts(df: pd.DataFrame, show_plot: bool):
+    """
+    Generate and optionally display/save surface-related charts for the given property dataset.
+
+    This function creates two plots:
+    1. A histogram showing the distribution of habitable surface areas up to 1000 m².
+    2. A boxplot for properties with large surface areas (greater than 1000 m²) showing price distribution.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing property data, expected to include columns
+                           'habitableSurface' and 'price'.
+        show_plot (bool): Whether to display the generated plots interactively.
+
+    Returns:
+        None
+    """
     plot_surface_histogram(df, "plots/05_histogram_surface.png", show_plot)
 
     # big value for surface
@@ -14,12 +29,20 @@ def generate_surface_charts(df: pd.DataFrame, show_plot: bool):
 
 def plot_surface_histogram(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
     """
-    Create a histogram of the number of properties according to their surface.
+    Create and optionally save/show a histogram of property counts by habitable surface area.
+
+    Filters out non-positive and excessively large values (>1000 m²) before plotting.
 
     Args:
-        df (pd.DataFrame): The dataset containing property data.
-        plot_file_path (str): If provided, saves the plot to this file path.
-        show_plot (bool): Whether to display the plot on screen.
+        df (pd.DataFrame): DataFrame containing property data with a 'habitableSurface' column.
+        plot_file_path (str): File path to save the plot image. If empty or None, the plot is not saved.
+        show_plot (bool): Whether to display the plot interactively.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If 'habitableSurface' column is missing in the DataFrame.
     """
     try:
         # Vérification de la présence de la colonne 'surface'
@@ -52,7 +75,23 @@ def plot_surface_histogram(df: pd.DataFrame, plot_file_path: str, show_plot: boo
 def plot_big_surface_boxplot(df: pd.DataFrame, surface_col="habitableSurface", price_col="price",
                              min_surface: int = 1000, plot_file_path: str = None, show_plot: bool = True) -> None:
     """
-    Plot a boxplot of properties with very large surface area (default > 1000 m²), showing price distribution.
+    Plot a boxplot of property prices for properties with a large surface area exceeding a minimum threshold.
+
+    Filters properties by surface area and non-missing price, then plots price distribution.
+
+    Args:
+        df (pd.DataFrame): DataFrame containing property data.
+        surface_col (str, optional): Name of the column containing surface area data. Defaults to "habitableSurface".
+        price_col (str, optional): Name of the column containing price data. Defaults to "price".
+        min_surface (int, optional): Minimum surface area threshold to filter properties. Defaults to 1000.
+        plot_file_path (str, optional): File path to save the plot image. If None, the plot is not saved.
+        show_plot (bool, optional): Whether to display the plot interactively. Defaults to True.
+
+    Returns:
+        None
+
+    Raises:
+        ValueError: If either surface_col or price_col is missing in the DataFrame.
     """
     try:
         # Vérification des colonnes
@@ -81,4 +120,4 @@ def plot_big_surface_boxplot(df: pd.DataFrame, surface_col="habitableSurface", p
             plt.show()
 
     except Exception as e:
-        print(f"[ERRO] Failed to plot big surface boxplot => {e}")
+        print(f"[ERROR] Failed to plot big surface boxplot => {e}")

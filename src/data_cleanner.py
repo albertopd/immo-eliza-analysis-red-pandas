@@ -8,17 +8,33 @@ from pathlib import Path
 import numpy as np
 
 class DataCleanner:
+    """
+    A data cleaning utility class for loading, analyzing, cleaning, normalizing,
+    and exporting real estate property datasets.
+
+    Supports multiple file formats and provides functions for data quality analysis,
+    duplicate removal, error correction, normalization of categorical features,
+    and output file export.
+    """
 
     def __init__(self, data_file_path: str) -> None:
         """
-        Initialize the DataCleaner with the path to the data file.
+        Initialize the DataCleanner with the path to the data file.
+
+        Args:
+            data_file_path (str): Path to the input data file.
         """
         self.data_file_path = data_file_path
 
     def load_data_file(self) -> pd.DataFrame:
         """
-        Load any supported data file and return a pandas DataFrame.
-        Supported formats: CSV, JSON, Excel, Parquet, TXT, XML
+        Load a data file into a pandas DataFrame.
+
+        Supports CSV, JSON, Excel, Parquet, TXT (tab-delimited), and XML formats.
+        Handles missing or empty files gracefully.
+
+        Returns:
+            pd.DataFrame: Loaded data or empty DataFrame on failure.
         """
         if not os.path.exists(self.data_file_path) or os.path.getsize(self.data_file_path) == 0:
             print(f"[WARNING] File is missing or empty: {self.data_file_path}")
@@ -57,8 +73,19 @@ class DataCleanner:
     
     def analyze_data_quality(self,df: pd.DataFrame) -> pd.DataFrame:
         """
-        Analyze data quality for a DataFrame.
-        Returns a summary of data types, missing values, and uniqueness for each column.
+        Analyze the data quality of a DataFrame.
+
+        Computes and returns a summary including:
+        - Data types
+        - Non-null counts
+        - Missing value counts and percentages
+        - Number of unique values per column
+
+        Args:
+            df (pd.DataFrame): DataFrame to analyze.
+
+        Returns:
+            pd.DataFrame: Summary of data quality metrics per column.
         """
         if df.empty:
             print("[WARNING] The DataFrame is empty.")
@@ -77,12 +104,12 @@ class DataCleanner:
 
     def clean_duplicates(self) -> pd.DataFrame:
         """
-        Cleans the dataset by:
-        - Removing duplicate rows.
-        - Dropping irrelevant or empty fields.
-        - Displaying data quality metrics before and after cleaning.
+        Clean the dataset by removing duplicate rows and dropping irrelevant columns.
+
+        Also prints data quality metrics before and after cleaning.
+
         Returns:
-            cleaned_df (pd.DataFrame): The cleaned dataset.
+            pd.DataFrame: The cleaned DataFrame.
         """
 
         # Step 1: Load the raw dataset
@@ -118,14 +145,17 @@ class DataCleanner:
         
     def clean_errors(self) -> pd.DataFrame:
         """
-        Cleans data errors by:
-        - Standardizing 'locality' to uppercase and stripping whitespace.
-        - Unifying locality names by postalCode using the most frequent value.
-        - Converting boolean columns to integers.
-        - Stripping whitespace in all string columns.
-        
+        Perform error correction and standardization on the dataset.
+
+        - Standardizes 'locality' to uppercase and strips whitespace.
+        - Normalizes locality names per postal code using the most frequent value.
+        - Drops 'streetFacadeWidth' column (due to excessive missing data).
+        - Drops rows missing a price value.
+        - Converts specified boolean-like columns to integers.
+        - Strips whitespace and fills missing values in specified string columns.
+
         Returns:
-            pd.DataFrame: Cleaned DataFrame.
+            pd.DataFrame: Cleaned and standardized DataFrame.
         """
         df = self.clean_duplicates()
         # Step 1: Normalize text
@@ -184,6 +214,20 @@ class DataCleanner:
         return df
 
     def normalization(self) -> pd.DataFrame:
+        """
+        Normalize categorical columns by mapping textual categories to numerical codes.
+
+        Normalizes:
+        - Building condition
+        - EPC score
+        - Heating type
+        - Flood zone type
+        - Kitchen type
+
+        Returns:
+            pd.DataFrame: DataFrame with additional normalized categorical columns.
+        """
+
         # Get cleaned DataFrame
         df = self.clean_errors()
 
@@ -268,13 +312,27 @@ class DataCleanner:
         return df
     
     def to_real_values(self) -> pd.DataFrame:
+        """
+        Convert normalized placeholder values (-1) to NaN to represent missing data.
+
+        Returns:
+            pd.DataFrame: Normalized DataFrame with missing values as NaN.
+        """
         df = self.normalization()
         df = df.replace(-1, np.nan)
         return df
 
     def send_output_file(self, output_file: str):
         """
-        Exports the cleaned and deduplicated DataFrame to a new CSV file.
+        Export the cleaned, deduplicated, and normalized DataFrame to a CSV file.
+
+        Creates the output directory if it does not exist.
+
+        Args:
+            output_file (str): File path where to save the CSV output.
+
+        Returns:
+            None
         """
         cleaned_df = self.normalization()
         if not cleaned_df.empty:

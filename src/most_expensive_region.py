@@ -7,6 +7,21 @@ from src.data_cleanner import DataCleanner
 # -------------------- Préparation des données --------------------
 
 def get_expensive_municipality_data():
+    """
+    Load, clean, and aggregate property price data to identify expensive municipalities in Belgium.
+
+    - Loads data from a cleaned CSV file.
+    - Filters properties with price > 10,000€ and habitable surface > 10 m².
+    - Calculates price per square meter.
+    - Maps postal codes to regions (Brussels, Wallonia, Flanders, Unknown).
+    - Aggregates data by region, province, and locality to compute average price, median price,
+      average price per m², and count of properties.
+    - Adds an aggregate row for the whole country ("Belgium") by duplicating regional data.
+
+    Returns:
+        pd.DataFrame: Aggregated DataFrame with columns:
+            ['region', 'province', 'locality', 'avg_price', 'med_price', 'price_m2', 'count']
+    """
     # Chargement et nettoyage des données
     data = DataCleanner("data/data_cleanned.csv")
     df = data.load_data_file()
@@ -35,8 +50,22 @@ def get_expensive_municipality_data():
     full_df = pd.concat([agg_df, agg_df_belgium], ignore_index=True)
     return full_df
 
-
 def map_postcode_to_region(postcode):
+    """
+    Map a Belgian postal code to its corresponding region.
+
+    Regions:
+        - Brussels: 1000–1299
+        - Wallonia: 1300–1499 and 4000–7999
+        - Flanders: 1500–3999
+        - Unknown: Any other value or invalid input
+
+    Args:
+        postcode (str or int): Postal code to map.
+
+    Returns:
+        str: Region name ("Brussels", "Wallonia", "Flanders", or "Unknown").
+    """
     try:
         pc = int(postcode)
         if 1000 <= pc <= 1299:
@@ -53,6 +82,25 @@ def map_postcode_to_region(postcode):
 # -------------------- Plotting --------------------
 
 def plot_top_expensive(df_region, title_prefix, save_path=None):
+    """
+    Plot bar charts for the top 10 most expensive municipalities in a given region.
+
+    Generates three side-by-side barplots showing:
+    1. Average price (€)
+    2. Median price (€)
+    3. Price per square meter (€)
+
+    Each bar is annotated with its respective value.
+
+    Args:
+        df_region (pd.DataFrame): DataFrame filtered by a specific region with columns
+                                  ['locality', 'avg_price', 'med_price', 'price_m2'].
+        title_prefix (str): Title prefix to display on the plot.
+        save_path (str, optional): File path to save the plot image. If None, the plot is not saved.
+
+    Returns:
+        None
+    """
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
     fig.suptitle(f"{title_prefix} - Top 10 Most Expensive Municipalities", fontsize=16)
 
@@ -88,6 +136,17 @@ def plot_top_expensive(df_region, title_prefix, save_path=None):
 # -------------------- Entrée principale --------------------
 
 def generate_all_expensive_municipality_charts():
+    """
+    Generate and save top expensive municipality charts for Belgium and its regions.
+
+    - Ensures the "plots" directory exists.
+    - Loads and processes property data to get aggregated expensive municipality info.
+    - Generates and saves bar charts for Belgium, Wallonia, Flanders, and Brussels.
+    - Prints a warning if no data is available for a region.
+
+    Returns:
+        None
+    """
     os.makedirs("plots", exist_ok=True)
 
     df = get_expensive_municipality_data()

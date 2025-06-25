@@ -7,6 +7,23 @@ import matplotlib.patches as mpatches
 matplotlib.use('TkAgg')
 
 def data_analysis_charts(df: pd.DataFrame, show_plot: bool):
+    """
+    Generate a series of exploratory data analysis charts on the dataset.
+
+    This function calls individual plot functions to visualize:
+    - Missing values percentages per feature
+    - Correlation of features with price
+    - Correlation among count-based features
+    - Detection of outliers in numeric features
+
+    Args:
+        df (pd.DataFrame): The input dataset for analysis.
+        show_plot (bool): Whether to display the plots interactively.
+
+    Returns:
+        None
+    """
+
     # Plot missing values percentages
     plot_missing_values_percentage(df, "plots/01_missing_values_percentage.png", show_plot)
 
@@ -21,6 +38,17 @@ def data_analysis_charts(df: pd.DataFrame, show_plot: bool):
     plot_outliers(df, "plots/04_outliers.png", show_plot)
 
 def plot_missing_values_percentage(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
+    """
+    Plot a horizontal bar chart showing the percentage of missing values per feature.
+
+    Args:
+        df (pd.DataFrame): Dataset containing features to analyze for missing data.
+        plot_file_path (str): Path to save the plot image file. If empty or None, plot is not saved.
+        show_plot (bool): Whether to display the plot interactively.
+
+    Returns:
+        None
+    """
     try:
         # Calculate missing data information
         missing_data = df.isna().sum()
@@ -65,6 +93,19 @@ def plot_missing_values_percentage(df: pd.DataFrame, plot_file_path: str, show_p
         print(f"[ERRO] Failed to plot Missing Values Percentage => {e}")
 
 def plot_correlations_to_price(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
+    """
+    Plot the correlation coefficients of numeric features with the 'price' column.
+
+    Only numeric columns are considered, and the correlation excludes 'price' itself.
+
+    Args:
+        df (pd.DataFrame): Dataset with numeric features and a 'price' column.
+        plot_file_path (str): File path to save the plot image. If None or empty, plot is not saved.
+        show_plot (bool): Whether to display the plot interactively.
+
+    Returns:
+        None
+    """
     try:
         # Selecting only numeric columns
         numeric_df = df.select_dtypes(include=["int64", "float64"])
@@ -104,6 +145,20 @@ def plot_correlations_to_price(df: pd.DataFrame, plot_file_path: str, show_plot:
         print(f"[ERRO] Failed to plot correlations with the the variable 'price' => {e}")
 
 def plot_outliers(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
+    """
+    Detect and visualize outliers in numeric features using boxplots.
+
+    Uses the Interquartile Range (IQR) method to count outliers per feature,
+    annotates counts on the plot, and colors extreme outlier counts differently.
+
+    Args:
+        df (pd.DataFrame): Dataset containing numeric features.
+        plot_file_path (str): Path to save the boxplot image. If empty or None, plot is not saved.
+        show_plot (bool): Whether to display the plot interactively.
+
+    Returns:
+        None
+    """
     try:
         # Select only numeric columns
         numeric_df = df.select_dtypes(include=["int64", "float64"])
@@ -186,6 +241,19 @@ def plot_outliers(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> Non
         print(f"[ERRO] Failed to plot outliers => {e}")
 
 def plot_count_features_correlations(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
+    """
+    Plot a heatmap of Pearson correlation coefficients among count-based features.
+
+    The selected features represent counts of rooms, bathrooms, parking, etc.
+
+    Args:
+        df (pd.DataFrame): Dataset containing count-based features.
+        plot_file_path (str): Path to save the heatmap image. If empty or None, plot is not saved.
+        show_plot (bool): Whether to display the plot interactively.
+
+    Returns:
+        None
+    """
     try:
         # Define count-related columns
         count_columns = [
