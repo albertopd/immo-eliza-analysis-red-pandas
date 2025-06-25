@@ -1,18 +1,17 @@
-import plotly.express as px
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
-from data_cleanner import DataCleanner
+import plotly.express as px
 from dash import Dash, dcc, html, Input, Output
+import dash_bootstrap_components as dbc
+from data_cleanner import DataCleanner
 
-
-data = DataCleanner("data/cdata_cleanned.csv")
-# Load the cleaned dataset
+# Chargement et préparation des données
+data = DataCleanner("data/data_cleanned.csv")
 df = data.load_data_file()
+df = df[
+        (df["price"].notna()) & (df["price"] > 10000) & (df["price"] < 1_000_000) &
+        (df["habitableSurface"].notna()) & (df["habitableSurface"] > 10)
+    ].copy()
 
-# Ensure necessary fields are clean and usable
-df = df[df["price"] > 10000]
-df = df[df["habitableSurface"] > 10]  # remove abnormal entries to have valid surface data only
 df["price_per_m2"] = df["price"] / df["habitableSurface"]
 
 ####################################################################################
@@ -34,70 +33,67 @@ def map_postcode_to_region(postcode):
             return "Wallonia"
         elif 1500 <= pc <= 3999:
             return "Flanders"
-        else:
-            return "Unknown"
     except:
         return "Unknown"
 
-# Apply mapping
-df["region"] = df["postCode"].apply(map_postcode_to_region)   
+df["region"] = df["postCode"].apply(map_postcode_to_region)
 
-# Select relevant columns                                                          
-summary_df = df[["locality", "province","region", "price", "price_per_m2"]].copy()   
-# Compute stats per locality
-agg_df = summary_df.groupby(["region", "province","locality"]).agg(
-    avg_price=("price", "mean"),
-    med_price=("price", "median"),
-    price_m2=("price_per_m2", "mean"),
-    count=("price", "count")
-).reset_index()
-##########################################################################################
-# Region Maps: Create region-level choropleth map using public GeoJSON of Belgium regions#                                                   #
-##########################################################################################
-
+# Agrégation par région
 region_avg = df.groupby("region").agg(avg_price=("price", "mean")).reset_index()
 fig_region = px.choropleth(
     region_avg,
     geojson="https://raw.githubusercontent.com/napoleon03/be-geojson/main/belgium_regions.geojson",
-    featureidkey="properties.name",  # GeoJSON property key to match with 'region'
+    featureidkey="properties.name",
     locations="region",
     color="avg_price",
     color_continuous_scale="Blues",
     title="💶 Average Property Price by Region"
 )
 fig_region.update_geos(fitbounds="locations", visible=False)
-########################################################################################
-#                         Call back on click with dash                                 #
-########################################################################################
+
+# Initialisation app
+app = Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.title = "Belgium Real Estate"
+
+# Layout responsive
+app.layout = dbc.Container(fluid=True, children=[
+    dbc.Row([
+        dbc.Col(html.H2("🏠 Belgium Real Estate - Interactive Dashboard"), width=12)
+    ], className="my-3"),
+    
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardHeader("Choropleth Map"),
+                dbc.CardBody([
+                    dcc.Graph(id="map", figure=fig_region, config={"displayModeBar": False})
+                ])
+            ])
+        ], md=6, lg=4),  # Carte prend 1/3
+        dbc.Col([
+            dbc.Card([
+                dbc.CardHeader("Province Analysis"),
+                dbc.CardBody([
+                    dcc.Graph(id="province-bar", config={"displayModeBar": False})
+                ])
+            ])
+        ], md=6, lg=8),  # Graph prend 2/3
+    ])
+], style={"padding": "20px"})
 
 
-# Initialize Dash application
-app = Dash(__name__)
-
-# Layout with region map and a placeholder for bar chart by province
-app.layout = html.Div([
-    html.H2("Belgium Real Estate - Regional Price Explorer"),
-    dcc.Graph(id="map", figure=fig_region),  # Region-level map
-    dcc.Graph(id="province-bar")             # Dynamic bar chart of provinces
-])
-
-# Callback to update province bar chart when a region is clicked
 @app.callback(
     Output("province-bar", "figure"),
     Input("map", "clickData")
 )
 def update_province_chart(clickData):
-    # Default: empty chart
     if not clickData:
-        return px.bar(title="Click on a region to view province prices")
+        return px.bar(title="Click on a region to explore provinces")
 
-    # Extract selected region from clicked map data
     region = clickData["points"][0]["location"]
+    province_avg = df[df["region"] == region].groupby("province").agg(
+        avg_price=("price", "mean")).reset_index()
 
-    # Filter data for selected region and compute average price per province
-    province_avg = df[df["region"] == region].groupby("province").agg(avg_price=("price", "mean")).reset_index()
-
-    # Create bar chart
     fig = px.bar(
         province_avg,
         x="avg_price",
@@ -109,6 +105,5 @@ def update_province_chart(clickData):
     )
     return fig
 
-# Run the Dash web server
 if __name__ == "__main__":
     app.run_server(debug=True)
