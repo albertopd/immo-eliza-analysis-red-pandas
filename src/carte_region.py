@@ -6,7 +6,7 @@ from data_cleanner import DataCleanner
 from dash import Dash, dcc, html, Input, Output
 
 
-data = DataCleanner("data/cleaned_properties.csv")
+data = DataCleanner("data/cdata_cleanned.csv")
 # Load the cleaned dataset
 df = data.load_data_file()
 
