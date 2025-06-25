@@ -1,7 +1,7 @@
 import seaborn as sns
 import pandas as pd
 import matplotlib.pyplot as plt
-from data_cleanner import DataCleanner
+from src.data_cleanner import DataCleanner
 import matplotlib
 matplotlib.use('TkAgg')  
 

@@ -1,4 +1,4 @@
-from data_cleanner import DataCleanner
+from src.data_cleanner import DataCleanner
 
 data_cleaner = DataCleanner("data/immoweb-dataset.csv")
 #data_cleaner.clean_duplicates()
