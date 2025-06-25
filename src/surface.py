@@ -6,12 +6,11 @@ import matplotlib.patches as mpatches
 
 matplotlib.use('TkAgg')
 
-def data_interpretation_plots(df: pd.DataFrame, show_plot: bool):
+def generate_surface_charts(df: pd.DataFrame, show_plot: bool):
     plot_surface_histogram(df, "plots/05_histogram_surface.png", show_plot)
 
     # big value for surface
     plot_big_surface_boxplot(df, min_surface=1000, plot_file_path="plots/06_big_surface_boxplot.png", show_plot=show_plot)
-
 
 def plot_surface_histogram(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
     """
@@ -49,7 +48,6 @@ def plot_surface_histogram(df: pd.DataFrame, plot_file_path: str, show_plot: boo
             
     except Exception as e:
         print(f"[ERRO] Failed to plot surface histogram => {e}")
-
 
 def plot_big_surface_boxplot(df: pd.DataFrame, surface_col="habitableSurface", price_col="price",
                              min_surface: int = 1000, plot_file_path: str = None, show_plot: bool = True) -> None:

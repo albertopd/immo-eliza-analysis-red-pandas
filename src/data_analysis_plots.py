@@ -6,7 +6,7 @@ import matplotlib.patches as mpatches
 
 matplotlib.use('TkAgg')
 
-def data_analysis_plots(df: pd.DataFrame, show_plot: bool):
+def data_analysis_charts(df: pd.DataFrame, show_plot: bool):
     # Plot missing values percentages
     plot_missing_values_percentage(df, "plots/01_missing_values_percentage.png", show_plot)
 
