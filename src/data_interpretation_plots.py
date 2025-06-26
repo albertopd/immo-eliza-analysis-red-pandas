@@ -6,30 +6,6 @@ import matplotlib.patches as mpatches
 
 matplotlib.use('TkAgg')
 
-def data_interpretation_plots(df: pd.DataFrame, show_plot: bool):
-    plot_surface_histogram(df, "plots/05_histogram_surface.png", show_plot)
-
-    # Appliquer le mapping des régions
-    df = assign_region(df)
-
-    # Belgique
-    top_be = get_top_localities(df)
-    plot_top_localities(top_be, "Top 10 Most Expensive Localities in Belgium", "plots/06_top_expensive_belgium.png", show_plot)
-
-    # Wallonie
-    top_wal = get_top_localities(df, region_filter="Wallonie")
-    plot_top_localities(top_wal, "Top 10 Most Expensive Localities in Wallonia", "plots/07_top_expensive_wallonia.png", show_plot)
-
-    # Flandre
-    top_vla = get_top_localities(df, region_filter="Flandre")
-    plot_top_localities(top_vla, "Top 10 Most Expensive Localities in Flanders", "plots/08_top_expensive_flander.png", show_plot)
-
-    # Bruxelles
-    top_bru = get_top_localities(df, region_filter="Bruxelles")
-    plot_top_localities(top_bru, "Top 10 Most Expensive Localities in Brussels", "plots/09_top_expensive_bruxelles.png", show_plot)
-
-    # big value for surface
-    plot_big_surface_boxplot(df, min_surface=1000, plot_file_path="plots/10_big_surface_boxplot.png", show_plot=show_plot)
 
 
 def plot_surface_histogram(df: pd.DataFrame, plot_file_path: str, show_plot: bool) -> None:
@@ -53,9 +29,9 @@ def plot_surface_histogram(df: pd.DataFrame, plot_file_path: str, show_plot: boo
         # Création de l'histogramme
         plt.figure(figsize=(10, 6))
         sns.histplot(surface_data, bins=30, kde=False, color="skyblue", edgecolor="black")
-        plt.title("Distribution du nombre de propriétés selon la surface")
+        plt.title("Distribution of the number of properties according to the surface area")
         plt.xlabel("habitableSurface (m²)")
-        plt.ylabel("Nombre de propriétés")
+        plt.ylabel("Number of properties ")
         plt.tight_layout()
 
         if plot_file_path:
@@ -153,8 +129,8 @@ def plot_big_surface_boxplot(df: pd.DataFrame, surface_col="habitableSurface", p
         # Création du boxplot
         plt.figure(figsize=(8, 6))
         sns.boxplot(y=filtered_df[price_col], color="tomato")
-        plt.title(f"Distribution des prix pour les propriétés avec surface > {min_surface} m²")
-        plt.ylabel("Prix (€)")
+        plt.title(f"Price distribution for properties with surface area > {min_surface} m²")
+        plt.ylabel("Price (€)")
         plt.tight_layout()
 
         # Enregistrement du graphique
@@ -166,3 +142,31 @@ def plot_big_surface_boxplot(df: pd.DataFrame, surface_col="habitableSurface", p
 
     except Exception as e:
         print(f"[ERRO] Failed to plot big surface boxplot => {e}")
+
+def data_interpretation_plots(df: pd.DataFrame, show_plot: bool):
+    plot_surface_histogram(df, "plots/05_histogram_surface.png", show_plot)
+
+    # Appliquer le mapping des régions
+    df = assign_region(df)
+
+    # Belgique
+    top_be = get_top_localities(df)
+    plot_top_localities(top_be, "Top 10 Most Expensive Localities in Belgium", "plots/06_top_expensive_belgium.png", show_plot)
+
+    # Wallonie
+    top_wal = get_top_localities(df, region_filter="Wallonie")
+    plot_top_localities(top_wal, "Top 10 Most Expensive Localities in Wallonia", "plots/07_top_expensive_wallonia.png", show_plot)
+
+    # Flandre
+    top_vla = get_top_localities(df, region_filter="Flandre")
+    plot_top_localities(top_vla, "Top 10 Most Expensive Localities in Flanders", "plots/08_top_expensive_flander.png", show_plot)
+
+    # Bruxelles
+    top_bru = get_top_localities(df, region_filter="Bruxelles")
+    plot_top_localities(top_bru, "Top 10 Most Expensive Localities in Brussels", "plots/09_top_expensive_bruxelles.png", show_plot)
+
+    # big value for surface
+    plot_big_surface_boxplot(df, min_surface=1000, plot_file_path="plots/10_big_surface_boxplot.png", show_plot=show_plot)
+
+df = pd.read_csv("data/data_cleanned.csv")
+data_interpretation_plots(df, show_plot=True)

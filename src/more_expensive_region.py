@@ -9,14 +9,13 @@ data = DataCleanner("data/data_cleanned.csv")
 df = data.load_data_file()
 
 # Ensure necessary fields are clean and usable
-# Filtres qualité
 df = df[
     (df["habitableSurface"].notna()) &
     (df["habitableSurface"] > 10) &
     (df["habitableSurface"] < 25000) &
     (df["price"] > 10000) &
     (df["price"] < 800000)
-]
+]  # remove abnormal entries to have valid surface data only
 df["price_per_m2"] = df["price"] / df["habitableSurface"]
 
 ####################################################################################
@@ -60,11 +59,11 @@ agg_df = summary_df.groupby(["region", "province","locality"]).agg(
 # Function to plot by region
 def plot_top_cheapest(df_region, title_prefix):
     fig, axes = plt.subplots(1, 3, figsize=(18, 6))
-    fig.suptitle(f" {title_prefix} - Top 10 Least Expensive Municipalities -", fontsize=16)
+    fig.suptitle(f" {title_prefix} - Top 10 Most Expensive Municipalities -", fontsize=16)
 
     # Average Price
     sns.barplot(
-        data=df_region.nsmallest(10, "avg_price"),
+        data=df_region.nlargest(10, "avg_price"), 
         x="avg_price", y="locality",
         palette="Blues_r", ax=axes[0]
     )
@@ -72,7 +71,7 @@ def plot_top_cheapest(df_region, title_prefix):
 
     # Median Price
     sns.barplot(
-        data=df_region.nsmallest(10, "med_price"),
+        data=df_region.nlargest(10, "med_price"),
         x="med_price", y="locality",
         palette="Greens_r", ax=axes[1]
     )
@@ -80,7 +79,7 @@ def plot_top_cheapest(df_region, title_prefix):
 
     # Price per m²
     sns.barplot(
-        data=df_region.nsmallest(10, "price_m2"),
+        data=df_region.nlargest(10, "price_m2"),
         x="price_m2", y="locality",
         palette="Oranges_r", ax=axes[2]
     )
